@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Мои соцсети</title>
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#08070a">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    min-height: 100%;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: #08070a;
+  }
+
+  body {
+    color: #e8e8e8;
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 30px 18px 100px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ===== ФОН АНДЕГРАУНД ===== */
+  .bg-noise {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px),
+      radial-gradient(circle at 20% 30%, rgba(255,34,68,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 85% 70%, rgba(255,237,78,0.08) 0%, transparent 40%);
+  }
+
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+  }
+
+  /* ===== КОНТЕЙНЕР ===== */
+  .wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ===== ХЕДЕР ===== */
+  .header {
+    margin-bottom: 34px;
+    animation: fadeUp 0.8s ease;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ff2244;
+    border: 1px solid #ff2244;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 700;
+    box-shadow: 0 0 20px rgba(255,34,68,0.4), inset 0 0 10px rgba(255,34,68,0.1);
+  }
+
+  h1 {
+    font-size: clamp(26px, 7.5vw, 42px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 14px;
+    text-shadow:
+      2px 2px 0 #ff2244,
+      4px 4px 0 rgba(255,34,68,0.3);
+  }
+
+  h1 .accent {
+    color: #ffed4e;
+    text-shadow: 2px 2px 0 #ff2244;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #a8a8a8;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    border-left: 3px solid #ff2244;
+    padding-left: 12px;
+    max-width: 90%;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== СПИСОК ССЫЛОК ===== */
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: #13121a;
+    border: 1.5px solid #262430;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.15s, border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+    overflow: hidden;
+    animation: linkIn 0.5s cubic-bezier(0.5, 1.4, 0.5, 1) backwards;
+  }
+
+  .link::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: #ff2244;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s ease;
+  }
+
+  .link:hover::before,
+  .link:active::before {
+    transform: scaleY(1);
+  }
+
+  .link:hover, .link:active {
+    transform: translateX(4px);
+    border-color: #ff2244;
+    background: #1a1822;
+    box-shadow:
+      -4px 0 0 #ff2244,
+      0 8px 30px rgba(255,34,68,0.2);
+  }
+
+  @keyframes linkIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Иконка */
+  .link-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 3px;
+    background: #262430;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    font-family: 'Courier New', monospace;
+    font-weight: 900;
+    color: #ffed4e;
+    letter-spacing: -1px;
+    border: 1px solid #333140;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .link:hover .link-icon {
+    background: #ff2244;
+    color: #fff;
+  }
+
+  /* Текст */
+  .link-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .link-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .link-url {
+    font-size: 11px;
+    color: #6a6875;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.25s;
+  }
+
+  .link:hover .link-url {
+    color: #a8a8a8;
+  }
+
+  /* Стрелка */
+  .link-arrow {
+    font-size: 18px;
+    color: #6a6875;
+    transition: color 0.25s, transform 0.25s;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+  }
+
+  .link:hover .link-arrow {
+    color: #ff2244;
+    transform: translateX(4px);
+  }
+
+  /* Удаление в админ-режиме */
+  .link-delete {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ff2244;
+    color: #fff;
+    border: none;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    box-shadow: 0 4px 15px rgba(255,34,68,0.5);
+  }
+
+  body.admin .link { padding-right: 60px; }
+  body.admin .link-delete { display: flex; }
+  body.admin .link-arrow { display: none; }
+
+  /* Пустое состояние */
+  .empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #4a4855;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border: 1.5px dashed #262430;
+    border-radius: 4px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #4a4855;
+    text-transform: uppercase;
+  }
+
+  .footer .dot {
+    color: #ff2244;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  /* ===== КНОПКА АДМИНА (угол) ===== */
+  .admin-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #13121a;
+    border: 1.5px solid #262430;
+    color: #6a6875;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+  }
+
+  .admin-toggle:active {
+    transform: scale(0.9);
+  }
+
+  body.admin .admin-toggle {
+    background: #ff2244;
+    color: #fff;
+    border-color: #ff2244;
+    box-shadow: 0 0 25px rgba(255,34,68,0.6);
+  }
+
+  /* ===== ПЛАВАЮЩАЯ КНОПКА «ДОБАВИТЬ» ===== */
+  .add-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 16px 32px;
+    background: #ffed4e;
+    color: #08070a;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255,237,78,0.5), 0 4px 0 #b8a82e;
+    transition: transform 0.3s cubic-bezier(0.5, 1.5, 0.5, 1);
+    z-index: 100;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  body.admin .add-btn {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .add-btn:active {
+    transform: translateX(-50%) translateY(4px) scale(0.97);
+    box-shadow: 0 4px 15px rgba(255,237,78,0.5), 0 2px 0 #b8a82e;
+  }
+
+  /* ===== МОДАЛКА (форма) ===== */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+  }
+
+  .modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-box {
+    background: #13121a;
+    border: 1.5px solid #262430;
+    border-radius: 6px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,34,68,0.2);
+    transform: scale(0.9);
+    transition: transform 0.35s cubic-bezier(0.5, 1.5, 0.5, 1);
+    position: relative;
+  }
+
+  .modal.show .modal-box {
+    transform: scale(1);
+  }
+
+  .modal-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60px; height: 3px;
+    background: #ff2244;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+
+  .modal-sub {
+    font-size: 12px;
+    color: #6a6875;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #a8a8a8;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 14px 16px;
+    background: #08070a;
+    border: 1.5px solid #262430;
+    border-radius: 3px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field input:focus {
+    border-color: #ff2244;
+    box-shadow: 0 0 0 3px rgba(255,34,68,0.15);
+  }
+
+  .field input::placeholder {
+    color: #4a4855;
+    font-family: 'Courier New', monospace;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .mbtn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+  }
+
+  .mbtn.primary {
+    background: #ff2244;
+    color: #fff;
+    box-shadow: 0 4px 0 #a81630;
+  }
+
+  .mbtn.primary:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #a81630;
+  }
+
+  .mbtn.cancel {
+    background: #262430;
+    color: #a8a8a8;
+    box-shadow: 0 4px 0 #0a0910;
+  }
+
+  .mbtn.cancel:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #0a0910;
+  }
+
+  /* Тост */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #ffed4e;
+    color: #08070a;
+    padding: 12px 22px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    z-index: 300;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.5, 1.5, 0.5, 1), opacity 0.4s;
+    pointer-events: none;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 8px 30px rgba(255,237,78,0.4);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .toast.error {
+    background: #ff2244;
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(255,34,68,0.4);
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-noise"></div>
+  <div class="bg-grid"></div>
+
+  <div class="wrap">
+
+    <div class="header">
+      <div class="tag">// underground</div>
+      <h1>Приветствую тебя<br><span class="accent">мой друг</span></h1>
+      <p class="subtitle">Ниже можешь найти мои соц.сети</p>
+    </div>
+
+    <div class="links" id="links">
+      <div class="empty">Здесь пока пусто...<br>Загляни позже</div>
+    </div>
+
+    <div class="footer">© 2026 <span class="dot">●</span> all my links</div>
+
+  </div>
+
+  <button class="admin-toggle" id="adminToggle" title="Режим редактирования">⚙</button>
+
+  <button class="add-btn" id="addBtn">+ Добавить</button>
+
+  <!-- Модалка -->
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">Новая ссылка</div>
+      <div class="modal-sub" id="modalSub">// заполни поля</div>
+
+      <div class="field">
+        <label>Заголовок</label>
+        <input type="text" id="inpTitle" placeholder="Telegram" maxlength="40">
+      </div>
+
+      <div class="field">
+        <label>Ссылка (URL)</label>
+        <input type="url" id="inpUrl" placeholder="https://t.me/..." inputmode="url">
+      </div>
+
+      <div class="field">
+        <label>Иконка (эмодзи, необязательно)</label>
+        <input type="text" id="inpIcon" placeholder="✈️" maxlength="4">
+      </div>
+
+      <div class="modal-actions">
+        <button class="mbtn cancel" id="cancelBtn">Отмена</button>
+        <button class="mbtn primary" id="saveBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+<script>
+  /* ===== FIREBASE ===== */
+  const firebaseConfig = {
+    apiKey: "AIzaSyB5QTOlEyEzNtkA_HmL1SYkHSLpeKq1-HM",
+    authDomain: "hugs-e376f.firebaseapp.com",
+    databaseURL: "https://hugs-e376f-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "hugs-e376f",
+    storageBucket: "hugs-e376f.firebasestorage.app",
+    messagingSenderId: "334197021321",
+    appId: "1:334197021321:web:b968d471e08448a9b0c458"
+  };
+
+  /* ===== НАСТРОЙКИ ===== */
+  const PROFILE_ID = "offxll";   // твой ID
+  const ADMIN_PASSWORD = "admin"; // пароль для входа в режим редактирования
+  const STORAGE_ADMIN = "links_admin_ok";
+
+  /* ===== DOM ===== */
+  const linksBox = document.getElementById('links');
+  const adminToggle = document.getElementById('adminToggle');
+  const addBtn = document.getElementById('addBtn');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSub = document.getElementById('modalSub');
+  const inpTitle = document.getElementById('inpTitle');
+  const inpUrl = document.getElementById('inpUrl');
+  const inpIcon = document.getElementById('inpIcon');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const toast = document.getElementById('toast');
+
+  let db = null;
+  let dbRef = null;
+  let links = [];
+  let editingIndex = -1;
+  let isAdmin = false;
+
+  /* ===== Firebase init ===== */
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    dbRef = db.ref('hugs/links_' + PROFILE_ID);
+  } catch (e) {
+    console.error(e);
+    showToast('Ошибка подключения', true);
+  }
+
+  /* ===== Проверка админ-режима ===== */
+  if (localStorage.getItem(STORAGE_ADMIN) === '1') {
+    isAdmin = true;
+    document.body.classList.add('admin');
+  }
+
+  /* ===== Загрузка данных ===== */
+  if (dbRef) {
+    dbRef.on('value', (snap) => {
+      const data = snap.val() || {};
+      links = Array.isArray(data) ? data.filter(Boolean) : Object.values(data).filter(Boolean);
+      render();
+    });
+  }
+
+  /* ===== Рендер ===== */
+  function render() {
+    if (!links.length) {
+      linksBox.innerHTML = '<div class="empty">Здесь пока пусто...<br>Загляни позже</div>';
+      return;
+    }
+
+    linksBox.innerHTML = '';
+    links.forEach((link, i) => {
+      const a = document.createElement('a');
+      a.className = 'link';
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.style.animationDelay = (i * 0.06) + 's';
+
+      const num = String(i + 1).padStart(2, '0');
+      const iconContent = link.icon && link.icon.trim() ? link.icon : num;
+
+      a.innerHTML = `
+        <div class="link-icon">${escapeHtml(iconContent)}</div>
+        <div class="link-text">
+          <div class="link-title">${escapeHtml(link.title || 'Без названия')}</div>
+          <div class="link-url">${escapeHtml(link.url)}</div>
+        </div>
+        <div class="link-arrow">→</div>
+        <button class="link-delete" data-index="${i}" title="Удалить">×</button>
+      `;
+
+      linksBox.appendChild(a);
+    });
+
+    // Кнопки удаления
+    document.querySelectorAll('.link-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.index, 10);
+        if (confirm('Удалить "' + links[idx].title + '"?')) {
+          links.splice(idx, 1);
+          save();
+        }
+      });
+    });
+
+    // Тап по ссылке в режиме редактирования — редактирование
+    if (isAdmin) {
+      document.querySelectorAll('.link').forEach((a, i) => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          openEdit(i);
+        });
+      });
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ===== Сохранение в Firebase ===== */
+  async function save() {
+    if (!dbRef) return;
+    try {
+      await dbRef.set(links);
+      showToast('Сохранено ✓');
+    } catch (e) {
+      console.error(e);
+      showToast('Не удалось сохранить', true);
+    }
+  }
+
+  /* ===== Модалка ===== */
+  function openAdd() {
+    editingIndex = -1;
+    modalTitle.textContent = 'Новая ссылка';
+    modalSub.textContent = '// заполни поля';
+    inpTitle.value = '';
+    inpUrl.value = '';
+    inpIcon.value = '';
+    modal.classList.add('show');
+    setTimeout(() => inpTitle.focus(), 200);
+  }
+
+  function openEdit(i) {
+    editingIndex = i;
+    const l = links[i];
+    modalTitle.textContent = 'Редактирование';
+    modalSub.textContent = '// измени что нужно';
+    inpTitle.value = l.title || '';
+    inpUrl.value = l.url || '';
+    inpIcon.value = l.icon || '';
+    modal.classList.add('show');
+    setTimeout(() => inpTitle.focus(), 200);
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+    editingIndex = -1;
+  }
+
+  /* ===== Сохранить из формы ===== */
+  saveBtn.addEventListener('click', () => {
+    const title = inpTitle.value.trim();
+    let url = inpUrl.value.trim();
+    const icon = inpIcon.value.trim();
+
+    if (!title) {
+      showToast('Введи заголовок', true);
+      inpTitle.focus();
+      return;
+    }
+    if (!url) {
+      showToast('Введи ссылку', true);
+      inpUrl.focus();
+      return;
+    }
+
+    // Добавляем https:// если нет протокола
+    if (!/^[a-z]+:\/\//i.test(url)) {
+      if (/^(t\.me|telegram|wa\.me|instagram\.com|tiktok\.com|youtube\.com|youtu\.be|vk\.com|discord\.gg|github\.com)/i.test(url)) {
+        url = 'https://' + url;
+      } else {
+        url = 'https://' + url;
+      }
+    }
+
+    const item = { title, url, icon };
+
+    if (editingIndex >= 0) {
+      links[editingIndex] = item;
+    } else {
+      links.push(item);
+    }
+
+    closeModal();
+    save();
+  });
+
+  /* ===== Отмена ===== */
+  cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  /* ===== Тоггл админа ===== */
+  adminToggle.addEventListener('click', () => {
+    if (isAdmin) {
+      if (confirm('Выйти из режима редактирования?')) {
+        isAdmin = false;
+        localStorage.removeItem(STORAGE_ADMIN);
+        document.body.classList.remove('admin');
+        render();
+      }
+    } else {
+      const pwd = prompt('Введи пароль:');
+      if (pwd === ADMIN_PASSWORD) {
+        isAdmin = true;
+        localStorage.setItem(STORAGE_ADMIN, '1');
+        document.body.classList.add('admin');
+        render();
+        showToast('Режим редактирования');
+      } else if (pwd !== null) {
+        showToast('Неверный пароль', true);
+      }
+    }
+  });
+
+  /* ===== Кнопка «Добавить» ===== */
+  addBtn.addEventListener('click', openAdd);
+
+  /* ===== Тост ===== */
+  let toastTimer = null;
+  function showToast(text, isError) {
+    toast.textContent = text;
+    toast.classList.toggle('error', !!isError);
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
