@@ -11,114 +11,148 @@
             --text-color: #ffffff;
             --accent-red: #ff003c;
             --accent-green: #39ff14;
-            --card-bg: #111111;
-            --card-border: #222222;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Share Tech Mono', monospace; }
         body {
             background-color: var(--bg-color); color: var(--text-color); min-height: 100vh;
-            display: flex; justify-content: center; align-items: flex-start; padding: 30px 15px;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px; position: relative; overflow-x: hidden;
+            display: flex; justify-content: center; align-items: flex-start; padding: 20px 15px 80px 15px;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 60%);
+            position: relative; overflow-x: hidden;
         }
+        
+        /* Баннер для TikTok/Instagram */
+        #browser-warning { display: none; background: #111; color: #fff; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent-red); font-size: 14px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        /* Шапка профиля */
         .top-bar { position: absolute; top: 20px; right: 20px; z-index: 100; }
         .lang-btn { background: transparent; color: var(--text-color); border: 1px solid #444; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.3s; }
         .lang-btn:hover { border-color: var(--accent-green); color: var(--accent-green); box-shadow: 0 0 10px rgba(57, 255, 20, 0.2); }
-        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; }
-        .tag { align-self: flex-start; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 10px; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(255, 0, 60, 0.2); }
-        .title { font-family: 'Oswald', sans-serif; font-size: 42px; line-height: 1.1; text-transform: uppercase; margin-bottom: 10px; }
-        .title .red { color: #fff; text-shadow: 2px 2px 0px var(--accent-red), -2px -2px 0px rgba(255,0,60,0.5); }
-        .title .yellow { color: #fff; text-shadow: 2px 2px 0px #ffcc00, -2px -2px 0px rgba(255,204,0,0.5); }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; border-left: 3px solid var(--accent-red); padding-left: 10px; }
-        .links-container { display: flex; flex-direction: column; gap: 15px; }
-        .link-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 15px 20px; display: flex; align-items: center; text-decoration: none; color: var(--text-color); transition: all 0.2s ease; position: relative; overflow: hidden; }
-        .link-card:hover { border-color: #444; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .link-card:hover .arrow { color: var(--accent-green); transform: translateX(3px); }
-        .link-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 3px; background: var(--accent-red); opacity: 0; transition: 0.3s; }
-        .link-card:hover::before { opacity: 1; }
-        .icon-box { width: 45px; height: 45px; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 20px; margin-right: 15px; flex-shrink: 0; }
-        .link-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .link-title { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; margin-bottom: 3px; }
-        .link-url { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .arrow { color: #444; font-size: 18px; transition: 0.3s; }
+
+        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; margin-top: 30px; }
         
+        /* Аватарка */
+        .avatar-container { position: relative; margin-bottom: 15px; }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #333; box-shadow: 0 0 20px rgba(255,0,60,0.3); }
+        .username { font-family: 'Oswald', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+        .bio { color: #888; font-size: 14px; margin-bottom: 25px; }
+
+        .tag { border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 10px; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(255, 0, 60, 0.2); }
+        .title { font-family: 'Oswald', sans-serif; font-size: 38px; line-height: 1.1; text-transform: uppercase; margin-bottom: 30px; text-align: center; }
+        .title span { color: #fff; text-shadow: 2px 2px 0px var(--accent-red), -2px -2px 0px rgba(255,0,60,0.5); }
+
+        /* Кнопки */
+        .links-container { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+        .link-card { 
+            background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+            border-radius: 50px; padding: 15px 25px; display: flex; align-items: center; text-decoration: none; 
+            color: var(--text-color); transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .link-card:hover { transform: translateY(-3px); border-color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.4); background: rgba(255,255,255,0.1); }
+        .icon-box { font-size: 24px; margin-right: 15px; }
+        .link-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .link-title { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; }
+        .link-url { font-size: 12px; color: #666; }
+        .arrow { color: #fff; font-size: 20px; transition: 0.3s; }
+        .link-card:hover .arrow { transform: translateX(5px); color: var(--accent-green); }
+
+        /* Кнопка настроек */
         .settings-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #111; border: 1px solid #333; color: #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999; transition: 0.3s; }
         .settings-btn:hover { background: #222; border-color: var(--accent-red); transform: rotate(90deg); }
         
+        /* Модалка */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
-        .modal-content { background: #111; border: 1px solid #333; padding: 25px; border-radius: 10px; text-align: left; width: 95%; max-width: 400px; box-shadow: 0 0 30px rgba(255,0,60,0.1); max-height: 90vh; overflow-y: auto; }
-        .modal-content h2 { margin-bottom: 15px; font-size: 18px; letter-spacing: 1px; text-align: center; color: var(--accent-red); }
-        .modal-content label { font-size: 12px; color: #888; display: block; margin-top: 10px; margin-bottom: 5px; }
-        .modal-content input { width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: #fff; margin-bottom: 10px; outline: none; font-family: monospace; }
-        .modal-content input:focus { border-color: var(--accent-green); }
-        .modal-content button { width: 100%; padding: 12px; background: var(--accent-red); color: #fff; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .modal-content button:hover { background: #d10031; }
+        .modal-content { background: #0a0a0a; border: 1px solid #333; padding: 25px; border-radius: 15px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 40px rgba(255,0,60,0.15); }
+        .modal-content h2 { font-family: 'Oswald', sans-serif; color: var(--accent-red); text-align: center; margin-bottom: 20px; }
         
-        .edit-fields { display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
-        .edit-fields.active { display: block; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; border-radius: 5px; font-family: monospace; }
+        .input-group input:focus { outline: none; border-color: var(--accent-green); }
+        
+        .btn-primary { width: 100%; padding: 12px; background: var(--accent-red); color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-primary:hover { background: #d10031; }
+        .btn-add { background: transparent; border: 1px dashed #444; color: #fff; width: 100%; padding: 10px; margin-bottom: 15px; cursor: pointer; border-radius: 5px; }
+        .btn-add:hover { border-color: var(--accent-green); color: var(--accent-green); }
+        
+        /* Админ форма */
+        .admin-link-item { border: 1px solid #222; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #111; position: relative; }
+        .btn-delete { position: absolute; top: 10px; right: 10px; background: #300; color: #f00; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .admin-actions button { flex: 1; }
+        .btn-cancel { background: #333; color: #fff; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
+    <!-- Баннер для соцсетей -->
+    <div id="browser-warning">
+        <b style="color: #39ff14;">⚠️ Внимание:</b> Вы в браузере соцсети. Чтобы ссылки работали, нажмите <b>три точки (...)</b> и выберите <b>«Открыть в браузере»</b>.
+    </div>
+
     <div class="top-bar">
-        <button class="lang-btn" id="langToggle" onclick="toggleLanguage()">УКР / РУС</button>
+        <button class="lang-btn" onclick="toggleLanguage()">УКР / РУС</button>
     </div>
 
     <div class="container">
         <div class="tag">// UNDERGROUND</div>
-        <h1 class="title">
-            <span class="red" id="mainTitle">ЗАГРУЗКА...</span><br>
-            <span class="yellow" id="mainTitleUa"></span>
-        </h1>
-        <div class="subtitle" id="subTitle">...</div>
-
-        <div class="links-container" id="linksContainer">
-            <!-- Ссылки генерируются из JSON -->
+        
+        <div class="avatar-container">
+            <img src="" id="profileAvatar" class="avatar" alt="Avatar">
         </div>
+        <h1 class="username" id="profileName">offxll</h1>
+        <div class="bio" id="profileBio">...</div>
+
+        <h2 class="title">
+            <span id="mainTitle">ЗАГРУЗКА...</span>
+        </h2>
+
+        <div class="links-container" id="linksContainer"></div>
     </div>
 
     <div class="settings-btn" onclick="openAdminModal()">⚙️</div>
 
-    <!-- Модалка Админа -->
     <div class="modal" id="adminModal">
-        <div class="modal-content">
-            <h2>ВХОД ДЛЯ АДМИНА</h2>
-            <label>Пароль от панели</label>
-            <input type="password" id="adminPassword" placeholder="Пароль (по умолчанию admin123)">
-            <button onclick="checkPassword()">ВОЙТИ</button>
-            
-            <div class="edit-fields" id="editFields">
-                <label>GitHub Personal Access Token (для сохранения)</label>
-                <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxx">
-                <button onclick="saveToGitHub()" style="background: var(--accent-green); color: #000;">СОХРАНИТЬ ВСЕ НА САЙТЕ</button>
-                <div id="status" style="margin-top: 10px; font-size: 12px; text-align: center;"></div>
-            </div>
+        <div class="modal-content" id="modalContent">
+            <!-- Здесь будет либо пароль, либо админка -->
         </div>
     </div>
 
     <script>
-        // ===== НАСТРОЙКИ =====
         const ADMIN_PASSWORD = "admin123"; 
-        const GITHUB_USER = "offxll"; // Ваш никнейм на GitHub
-        const GITHUB_REPO = "bio";    // Название репозитория
+        const GITHUB_USER = "offxll"; 
+        const GITHUB_REPO = "bio";    
         
         let siteData = null;
         let currentLang = localStorage.getItem('siteLang') || 'ru';
 
-        // ===== 1. ЗАГРУЗКА ДАННЫХ =====
+        // Проверка на WebView (TikTok/Insta)
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1) {
+            document.getElementById('browser-warning').style.display = 'block';
+        }
+
+        // ЗАГРУЗКА
         async function loadData() {
             try {
                 const res = await fetch(`data.json?t=${Date.now()}`);
                 siteData = await res.json();
-                renderLinks();
-                setLanguage(currentLang);
+                renderUI();
             } catch (e) {
-                document.getElementById('linksContainer').innerHTML = `<p style="color:red">Ошибка загрузки данных.</p>`;
+                document.getElementById('linksContainer').innerHTML = `<p style="color:red">Ошибка загрузки.</p>`;
             }
         }
 
-        // ===== 2. ОТРИСОВКА =====
-        function renderLinks() {
+        // ОТРИСОВКА
+        function renderUI() {
+            if(!siteData) return;
+            if(siteData.profile) {
+                document.getElementById('profileAvatar').src = siteData.profile.avatar;
+                document.getElementById('profileName').innerText = siteData.profile.name;
+                document.getElementById('profileBio').innerText = siteData.profile.bio;
+            }
+
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
             
@@ -138,105 +172,152 @@
                 `;
                 container.appendChild(a);
             });
+            setLanguage(currentLang);
         }
 
-        // ===== 3. ЯЗЫК =====
+        // ЯЗЫК
         function setLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('siteLang', lang);
             if(!siteData) return;
-
-            document.querySelector('.red').innerText = lang === 'ru' ? siteData.title_ru : siteData.title_ua;
-            document.querySelector('.yellow').innerText = lang === 'ru' ? 'МОЙ ДРУГ' : 'МІЙ ДРУГ';
-            document.getElementById('subTitle').innerText = lang === 'ru' ? siteData.subtitle_ru : siteData.subtitle_ua;
-
+            document.getElementById('mainTitle').innerText = lang === 'ru' ? siteData.title_ru : siteData.title_ua;
             document.querySelectorAll('.link-title').forEach(el => {
                 el.innerText = el.getAttribute(`data-${lang}`);
             });
         }
+        function toggleLanguage() { setLanguage(currentLang === 'ru' ? 'ua' : 'ru'); }
 
-        function toggleLanguage() {
-            setLanguage(currentLang === 'ru' ? 'ua' : 'ru');
-        }
-
-        // ===== 4. АДМИН ПАНЕЛЬ =====
+        // АДМИНКА
         function openAdminModal() {
-            document.getElementById('adminModal').classList.add('active');
+            const modal = document.getElementById('adminModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('active');
+            
+            content.innerHTML = `
+                <h2>ВХОД</h2>
+                <div class="input-group">
+                    <input type="password" id="adminPassword" placeholder="Пароль">
+                </div>
+                <button class="btn-primary" onclick="checkPassword()">ВОЙТИ</button>
+            `;
         }
 
         function checkPassword() {
             const pass = document.getElementById('adminPassword').value;
             if (pass === ADMIN_PASSWORD) {
-                document.getElementById('editFields').classList.add('active');
-                const savedToken = localStorage.getItem('ghToken');
-                if (savedToken) document.getElementById('ghToken').value = savedToken;
+                renderAdminForm();
             } else {
                 alert("Неверный пароль!");
             }
         }
 
-        // ===== 5. СОХРАНЕНИЕ НА GITHUB =====
+        function renderAdminForm() {
+            const content = document.getElementById('modalContent');
+            
+            let linksHtml = '';
+            siteData.links.forEach((link, index) => {
+                linksHtml += `
+                    <div class="admin-link-item">
+                        <button class="btn-delete" onclick="deleteLink(${index})">✕</button>
+                        <div class="input-group"><label>Эмодзи/Иконка</label><input type="text" value="${link.icon}" oninput="updateField(${index}, 'icon', this.value)"></div>
+                        <div class="input-group"><label>Название (РУС)</label><input type="text" value="${link.title_ru}" oninput="updateField(${index}, 'title_ru', this.value)"></div>
+                        <div class="input-group"><label>Название (УКР)</label><input type="text" value="${link.title_ua}" oninput="updateField(${index}, 'title_ua', this.value)"></div>
+                        <div class="input-group"><label>Ссылка (URL)</label><input type="text" value="${link.url}" oninput="updateField(${index}, 'url', this.value)"></div>
+                        <div class="input-group"><label>Текст ссылки (t.me/...)</label><input type="text" value="${link.display_url}" oninput="updateField(${index}, 'display_url', this.value)"></div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = `
+                <h2>ПАНЕЛЬ УПРАВЛЕНИЯ</h2>
+                
+                <div class="input-group"><label>GitHub Токен (для сохранения)</label><input type="password" id="ghToken" placeholder="ghp_..." value="${localStorage.getItem('ghToken') || ''}"></div>
+                
+                <div style="max-height: 40vh; overflow-y: auto; padding-right: 5px; margin-top: 15px;" id="admin-links-list">
+                    ${linksHtml}
+                </div>
+                
+                <button class="btn-add" onclick="addNewLink()">+ Добавить новую ссылку</button>
+                
+                <div class="admin-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('active')">Отмена</button>
+                    <button class="btn-primary" style="background: var(--accent-green); color: #000;" onclick="saveToGitHub()">Сохранить всё</button>
+                </div>
+                <div id="status" style="margin-top: 15px; text-align: center; font-size: 14px; font-weight: bold;"></div>
+            `;
+        }
+
+        function updateField(index, field, value) {
+            siteData.links[index][field] = value;
+        }
+
+        function deleteLink(index) {
+            if(confirm("Удалить эту ссылку?")) {
+                siteData.links.splice(index, 1);
+                renderAdminForm();
+            }
+        }
+
+        function addNewLink() {
+            siteData.links.push({
+                icon: "🔗",
+                title_ru: "Новая ссылка",
+                title_ua: "Нове посилання",
+                url: "https://",
+                display_url: "example.com"
+            });
+            renderAdminForm();
+            // Скролл вниз админки
+            setTimeout(() => {
+                const list = document.getElementById('admin-links-list');
+                list.scrollTop = list.scrollHeight;
+            }, 100);
+        }
+
+        // СОХРАНЕНИЕ
         async function saveToGitHub() {
             const token = document.getElementById('ghToken').value.trim();
             const statusEl = document.getElementById('status');
             
-            if (!token) {
-                statusEl.innerText = "Введите токен GitHub!";
-                statusEl.style.color = "red";
-                return;
-            }
-
+            if (!token) { statusEl.innerText = "Введите токен!"; statusEl.style.color = "red"; return; }
             localStorage.setItem('ghToken', token);
+            
             statusEl.innerText = "Сохранение...";
             statusEl.style.color = "yellow";
 
-            const path = "data.json";
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data.json`;
 
             try {
                 const getRes = await fetch(apiUrl, { headers: { "Authorization": `token ${token}` } });
                 let sha = null;
-                if (getRes.ok) {
-                    const fileData = await getRes.json();
-                    sha = fileData.sha;
-                }
+                if (getRes.ok) sha = (await getRes.json()).sha;
 
                 const jsonString = JSON.stringify(siteData, null, 2);
                 const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
 
                 const putRes = await fetch(apiUrl, {
                     method: "PUT",
-                    headers: {
-                        "Authorization": `token ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: "Обновление через админ-панель",
-                        content: contentEncoded,
-                        sha: sha
-                    })
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Обновление через админку", content: contentEncoded, sha: sha })
                 });
 
                 if (putRes.ok) {
-                    statusEl.innerText = "УСПЕШНО! Обновите страницу через 1 минуту.";
+                    statusEl.innerText = "УСПЕШНО СОХРАНЕНО!";
                     statusEl.style.color = "var(--accent-green)";
+                    setTimeout(() => {
+                        document.getElementById('adminModal').classList.remove('active');
+                        loadData(); // Перезагружаем данные
+                    }, 1500);
                 } else {
                     const err = await putRes.json();
                     statusEl.innerText = `Ошибка: ${err.message}`;
                     statusEl.style.color = "red";
                 }
             } catch (e) {
-                statusEl.innerText = "Ошибка сети. Проверьте токен.";
+                statusEl.innerText = "Ошибка сети.";
                 statusEl.style.color = "red";
             }
         }
-
-        document.getElementById('adminModal').addEventListener('click', (e) => {
-            if (e.target.id === 'adminModal') {
-                document.getElementById('adminModal').classList.remove('active');
-                document.getElementById('editFields').classList.remove('active');
-            }
-        });
 
         loadData();
     </script>
