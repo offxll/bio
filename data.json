@@ -9,23 +9,23 @@
   "links": [
     {
       "icon": "👽",
-      "title_ru": "мой тгк",
-      "title_ua": "мій тгк",
-      "url": "tg://resolve?domain=molodoyfoto",
+      "title_ru": "МОЙ ТГК",
+      "title_ua": "МІЙ ТГК",
+      "url": "https://t.me/molodoyfoto",
       "display_url": "t.me/molodoyfoto"
     },
     {
       "icon": "🎧",
-      "title_ru": "музончик",
-      "title_ua": "музончик ",
-      "url": "tg://resolve?domain=molodoyyymusic",
+      "title_ru": "МУЗОНЧИК",
+      "title_ua": "МУЗОНЧИК",
+      "url": "https://t.me/molodoyyymusic",
       "display_url": "t.me/molodoyyymusic"
     },
     {
       "icon": "🥷",
-      "title_ru": "био",
-      "title_ua": "біо",
-      "url": "tg://resolve?domain=moloffff",
+      "title_ru": "БИО",
+      "title_ua": "БІО",
+      "url": "https://t.me/moloffff",
       "display_url": "t.me/moloffff"
     },
     {
@@ -46,7 +46,7 @@
       "icon": "✉️",
       "title_ru": "ЛС - ТОЛЬКО ПО ВОПРОСАМ",
       "title_ua": "ОС - ТІЛЬКИ З ПИТАНЬ",
-      "url": "tg://resolve?domain=uryyyyy",
+      "url": "https://t.me/uryyyyy",
       "display_url": "t.me/uryyyyy"
     }
   ]
