@@ -6,10 +6,10 @@
     <title>OBSIDIAN // Bio Constructor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Подключаем Firebase SDK (Модульный) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyCMj2Ao9IGDU2tfLru9vKHiHiiZCVBp66w",
@@ -22,153 +22,49 @@
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
+      const auth = getAuth(app);
       
-      // Прокидываем функции в глобальную область видимости для обычного скрипта
-      window.db = db;
-      window.doc = doc;
-      window.getDoc = getDoc;
-      window.setDoc = setDoc;
-      
+      window.db = db; window.doc = doc; window.getDoc = getDoc; window.setDoc = setDoc; window.updateDoc = updateDoc; window.auth = auth;
       window.firebaseReady = true;
       window.dispatchEvent(new Event('firebaseLoaded'));
     </script>
 
     <style>
-        :root {
-            --bg-color: #050505;
-            --text-main: #ffffff;
-            --text-sub: #888888;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-hover: rgba(255, 255, 255, 0.1);
-            --accent: #ffffff;
-        }
-        
+        :root { --bg-color: #050505; --text-main: #ffffff; --text-sub: #888888; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-hover: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"); }
 
-        /* Экран загрузки */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#050505; display:flex; justify-content:center; align-items:center; z-index:99999; color:#fff; font-size:14px; transition:opacity 0.5s; }
+        .hero-section { width: 100%; height: 55vh; position: relative; display: flex; justify-content: center; align-items: flex-start; }
+        .hero-image { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: grayscale(100%); }
+        .hero-fade { position: absolute; bottom: 0; left: 0; width: 100%; height: 150px; background: linear-gradient(to top, var(--bg-color) 0%, rgba(5,5,5,0) 100%); pointer-events: none; }
 
-        .hero-section {
-            width: 100%;
-            height: 55vh;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .hero-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 20%;
-            filter: grayscale(100%);
-        }
-
-        .hero-fade {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%; height: 150px;
-            background: linear-gradient(to top, var(--bg-color) 0%, rgba(5,5,5,0) 100%);
-            pointer-events: none;
-        }
-
-        .main-content {
-            width: 100%;
-            max-width: 480px;
-            padding: 0 20px 100px 20px;
-            margin-top: -60px;
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        .main-content { width: 100%; max-width: 480px; padding: 0 20px 100px 20px; margin-top: -60px; position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; }
         .top-bar { position: absolute; top: 20px; right: 20px; z-index: 100; }
-        .lang-btn { 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-            color: #fff; border: 1px solid var(--glass-border); 
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: 0.3s; 
-        }
-        .lang-btn:hover { background: var(--glass-bg); border-color: #fff; }
+        .lang-btn { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; border: 1px solid var(--glass-border); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
-        .profile-info { text-align: center; margin-bottom: 35px; display: flex; flex-direction: column; align-items: center; }
-        
-        .name-big { 
-            font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 15px; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            cursor: pointer; user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
+        .profile-info { text-align: center; margin-bottom: 35px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .name-big { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
         .bio-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .bio-main { font-size: 15px; color: var(--text-main); font-weight: 400; letter-spacing: 0.5px; }
         .bio-sub { font-size: 12px; color: var(--text-sub); font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
 
         .links-list { width: 100%; display: flex; flex-direction: column; gap: 14px; }
-        
-        .link-card {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 18px 24px; background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            text-decoration: none; color: var(--text-main); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); position: relative;
-            cursor: pointer;
-        }
-        
-        .link-card:hover {
-            background: var(--glass-hover); transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.3);
-        }
-
+        .link-card { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); text-decoration: none; color: var(--text-main); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); position: relative; cursor: pointer; }
+        .link-card:hover { background: var(--glass-hover); transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.3); }
         .link-left { display: flex; align-items: center; gap: 15px; width: 85%; }
         .icon-box { font-size: 22px; }
         .link-info { display: flex; flex-direction: column; overflow: hidden; }
         .link-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .link-desc { font-size: 12px; color: var(--text-sub); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
         .arrow { color: rgba(255,255,255,0.4); font-size: 18px; transition: 0.3s; }
-        .link-card:hover .arrow { color: #fff; transform: translateX(3px); }
 
-        .copy-btn {
-            background: rgba(255,255,255,0.1); border: none; border-radius: 6px;
-            color: #fff; padding: 5px 8px; font-size: 12px; cursor: pointer;
-            margin-left: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-        }
-        .copy-btn:hover { background: rgba(255,255,255,0.3); }
+        .copy-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: #fff; padding: 5px 8px; font-size: 12px; cursor: pointer; margin-left: 10px; }
+        .action-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 24px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 20px; width: 100%; text-align: center; }
 
-        .settings-btn { 
-            position: fixed; bottom: 30px; right: 30px; 
-            width: 55px; height: 55px; border-radius: 50%; 
-            background: rgba(20, 20, 20, 0.8); border: 1px solid var(--glass-border); 
-            color: #fff; font-size: 20px; display: none; 
-            justify-content: center; align-items: center; 
-            cursor: pointer; z-index: 999; backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.3s;
-        }
+        .settings-btn { position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px; border-radius: 50%; background: rgba(20, 20, 20, 0.8); border: 1px solid var(--glass-border); color: #fff; font-size: 20px; display: none; justify-content: center; align-items: center; cursor: pointer; z-index: 999; backdrop-filter: blur(10px); }
         .settings-btn.visible { display: flex; }
-        .settings-btn:hover { background: #333; transform: rotate(90deg); }
 
-        .create-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: #888; padding: 12px 24px; border-radius: 20px; cursor: pointer; 
-            font-size: 13px; transition: 0.3s; margin-top: 40px;
-        }
-        .create-btn:hover { color: #fff; border-color: #fff; }
-
-        /* Модалка */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0f0f11; border: 1px solid #333; padding: 25px; border-radius: 20px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
@@ -180,31 +76,27 @@
         .input-group input:focus { outline: none; border-color: #fff; }
         
         .btn-primary { width: 100%; padding: 14px; background: #fff; color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 14px;}
-        .btn-primary:hover { background: #ccc; }
-        .btn-add { background: transparent; border: 1px dashed #444; color: #888; width: 100%; padding: 12px; margin-bottom: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; }
-        .btn-add:hover { border-color: #fff; color: #fff; }
+        .btn-add { background: transparent; border: 1px dashed #444; color: #888; width: 100%; padding: 12px; margin-bottom: 15px; cursor: pointer; border-radius: 8px; }
         
         .admin-link-item { border: 1px solid #222; padding: 15px; margin-bottom: 15px; position: relative; border-radius: 10px; background: #161618; }
         .btn-delete { position: absolute; top: 10px; right: 10px; background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-delete:hover { background: #ff4d4d; color: #000; }
         
         .admin-actions { display: flex; gap: 10px; margin-top: 20px; }
         .admin-actions button { flex: 1; }
         .btn-cancel { background: #222; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
         
-        #browser-warning { display: none; background: #111; color: #fff; padding: 15px; text-align: center; border-bottom: 1px solid #333; font-size: 13px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; font-weight: 500; }
+        #browser-warning { display: none; background: #111; color: #fff; padding: 15px; text-align: center; border-bottom: 1px solid #333; font-size: 13px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; }
+        .edit-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 16px; border-radius: 12px; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* ПОДСКАЗКА (Видна только создателю) */
+        .hint-text { font-size: 11px; color: #444; text-align: center; margin-top: 40px; line-height: 1.5; display: none; }
+        .hint-text b { color: #777; }
     </style>
 </head>
 <body>
     <div id="loader">Загрузка системы...</div>
-
-    <div id="browser-warning">
-        Вы в браузере соцсети. Для корректного перехода нажмите <b>(...)</b> и выберите <b>«Открыть в браузере»</b>.
-    </div>
-
-    <div class="top-bar">
-        <button class="lang-btn" onclick="toggleLanguage()">RU</button>
-    </div>
+    <div id="browser-warning">Вы в браузере соцсети. Для корректного перехода нажмите <b>(...)</b> и выберите <b>«Открыть в браузере»</b>.</div>
+    <div class="top-bar"><button class="lang-btn" onclick="toggleLanguage()">RU</button></div>
 
     <div class="hero-section">
         <img src="" id="heroImage" class="hero-image" alt="Profile Photo">
@@ -218,13 +110,20 @@
                 <div class="bio-main" id="bioMain">теневая экономика души</div>
                 <div class="bio-sub" id="bioSub">мои сети ниже</div>
             </div>
+            <button class="edit-btn" id="editMyPageBtn" style="display:none;" onclick="requestEditPassword()">✏️ Редактировать</button>
         </div>
 
         <div class="links-list" id="linksContainer"></div>
         
-        <button onclick="openCreatorModal()" class="create-btn">
+        <button id="createBtn" onclick="openCreatorModal()" class="action-btn" style="display:none;">
             Создать свою страницу
         </button>
+
+        <!-- ПОДСКАЗКА (Появится только у владельца страницы) -->
+        <div class="hint-text" id="secretHint">
+            Твоя страница защищена.<br>
+            Чтобы появилась кнопка редактирования, <b>нажми 5 раз на свое имя</b> вверху.
+        </div>
     </div>
 
     <div class="settings-btn" id="adminGear" onclick="openAdminModal()">⚙️</div>
@@ -232,51 +131,65 @@
 
     <script>
         const ADMIN_PASSWORD = "admin123"; 
-        
         let siteData = null;
         let currentLang = localStorage.getItem('siteLang') || 'ru';
         let currentUserId = null;
+        let pagePassword = null; 
+        let isCreator = false; // Переменная: является ли зашедший создателем
 
         var ua = navigator.userAgent || navigator.vendor || window.opera;
         if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1 || ua.indexOf("FBAN") > -1) {
             document.getElementById('browser-warning').style.display = 'block';
         }
 
-        // ===== 1. ЗАГРУЗКА ДАННЫХ =====
+        // ===== 1. ИНИЦИАЛИЗАЦИЯ =====
         async function initApp() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('u'); 
+            window.auth.onAuthStateChanged(async (user) => {
+                if (!user) await window.signInAnonymously(window.auth);
 
-            if (userId) {
-                // Грузим страницу конкретного пользователя из Firebase
-                currentUserId = userId;
-                try {
-                    const docRef = window.doc(window.db, "pages", userId);
-                    const docSnap = await window.getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        siteData = docSnap.data();
-                    } else {
-                        alert("Страница не найдена!");
-                        window.location.href = window.location.pathname; 
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("Ошибка загрузки данных");
-                }
-            } else {
-                // Если ID нет, грузим твой базовый data.json (для главной)
-                try {
-                    const res = await fetch(`data.json?t=${Date.now()}`);
-                    siteData = await res.json();
-                } catch (e) {
-                    document.getElementById('linksContainer').innerHTML = `<p style="color:red;text-align:center;">ERROR: DATA_NOT_FOUND</p>`;
-                }
-            }
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('u'); 
 
-            renderUI();
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+                if (userId) {
+                    currentUserId = userId;
+                    try {
+                        const docRef = window.doc(window.db, "pages", userId);
+                        const docSnap = await window.getDoc(docRef);
+                        
+                        if (docSnap.exists()) {
+                            siteData = docSnap.data();
+                            pagePassword = siteData.password || null;
+
+                            // ГЛАВНАЯ ПРОВЕРКА: Если ID браузера совпадает с ID создателя страницы
+                            if (siteData.ownerId === user.uid) {
+                                isCreator = true;
+                                
+                                // Показываем кнопку или подсказку ТОЛЬКО создателю
+                                if (siteData.password) {
+                                    document.getElementById('secretHint').style.display = 'block';
+                                } else {
+                                    document.getElementById('editMyPageBtn').style.display = 'inline-flex';
+                                }
+                            }
+                            // Если зашел друг (isCreator = false), он не видит ни кнопок, ни подсказок
+                        } else {
+                            alert("Страница не найдена!");
+                            window.location.href = window.location.pathname; 
+                        }
+                    } catch (e) { console.error(e); }
+                } else {
+                    // Главная страница (твоя)
+                    try {
+                        const res = await fetch(`data.json?t=${Date.now()}`);
+                        siteData = await res.json();
+                        document.getElementById('createBtn').style.display = 'block';
+                        isCreator = true; // На главной ты всегда создатель
+                    } catch (e) { }
+                }
+                renderUI();
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            });
         }
 
         if (window.firebaseReady) { initApp(); } 
@@ -285,36 +198,26 @@
         // ===== 2. ОТРИСОВКА =====
         function renderUI() {
             if(!siteData) return;
-            
             if(siteData.profile) {
-                if(siteData.profile.avatar && siteData.profile.avatar !== "") {
-                    document.getElementById('heroImage').src = siteData.profile.avatar;
-                } else {
-                    document.getElementById('heroImage').src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
-                }
+                document.getElementById('heroImage').src = siteData.profile.avatar || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
                 document.getElementById('profileName').innerText = siteData.profile.name;
                 
-                const fullBio = siteData.profile.bio || "";
-                const parts = fullBio.split('.');
-                
+                const parts = (siteData.profile.bio || "").split('.');
                 if (parts.length > 1) {
                     document.getElementById('bioMain').innerText = parts[0].trim();
                     document.getElementById('bioSub').innerText = parts.slice(1).join('.').trim();
                 } else {
-                    document.getElementById('bioMain').innerText = fullBio;
+                    document.getElementById('bioMain').innerText = siteData.profile.bio || "";
                     document.getElementById('bioSub').innerText = ""; 
                 }
             }
 
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
-            
-            siteData.links.forEach((link, index) => {
-                const isTelegram = link.url.includes('t.me/') || link.url.includes('telegram.me/');
-                
+            siteData.links.forEach((link) => {
+                const isTelegram = link.url.includes('t.me/');
                 const div = document.createElement('div');
                 div.className = "link-card";
-                
                 div.innerHTML = `
                     <div class="link-left">
                         <div class="icon-box">${link.icon}</div>
@@ -323,64 +226,43 @@
                             <div class="link-desc">${link.display_url}</div>
                         </div>
                     </div>
-                    ${isTelegram ? '<button class="copy-btn" title="Скопировать ссылку">📋</button>' : '<div class="arrow">→</div>'}
+                    ${isTelegram ? '<button class="copy-btn">📋</button>' : '<div class="arrow">→</div>'}
                 `;
-
-                div.addEventListener('click', function(e) {
+                div.onclick = (e) => {
                     if (e.target.classList.contains('copy-btn')) {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(link.url).then(() => {
-                            const originalText = e.target.innerText;
-                            e.target.innerText = '✅';
-                            setTimeout(() => e.target.innerText = originalText, 1500);
-                        });
-                        return;
+                        e.stopPropagation(); navigator.clipboard.writeText(link.url); e.target.innerText='✅'; setTimeout(()=>e.target.innerText='📋', 1500); return;
                     }
-
-                    if (isTelegram) {
-                        if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1) {
-                            window.open(link.url, '_blank');
-                        } else {
-                            const username = link.url.split('/').pop().split('?')[0];
-                            window.location.href = `tg://resolve?domain=${username}`;
-                            setTimeout(() => { window.open(link.url, '_blank'); }, 1500);
-                        }
-                    } else {
-                        window.open(link.url, '_blank');
-                    }
-                });
-
+                    window.open(link.url, '_blank');
+                };
                 container.appendChild(div);
             });
             setLanguage(currentLang);
         }
 
         function setLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('siteLang', lang);
+            currentLang = lang; localStorage.setItem('siteLang', lang);
             document.querySelector('.lang-btn').innerText = lang.toUpperCase();
-            if(!siteData) return;
-            document.querySelectorAll('.link-title').forEach(el => {
-                el.innerText = el.getAttribute(`data-${lang}`);
-            });
+            document.querySelectorAll('.link-title').forEach(el => el.innerText = el.getAttribute(`data-${lang}`));
         }
         function toggleLanguage() { setLanguage(currentLang === 'ru' ? 'ua' : 'ru'); }
 
-        // ===== 3. СЕКРЕТНЫЙ ВХОД =====
-        let tapCount = 0;
-        let tapTimer;
+        // ===== 3. СЕКРЕТНЫЙ ВХОД (5 кликов) =====
+        let tapCount = 0; let tapTimer;
         function handleSecretTap() {
-            tapCount++;
-            clearTimeout(tapTimer);
+            if (!isCreator) return; // Если это не создатель, клики не работают!
+            
+            tapCount++; clearTimeout(tapTimer);
             if (tapCount >= 5) {
-                document.getElementById('adminGear').classList.add('visible');
+                document.getElementById('adminGear').classList.add('visible'); 
+                document.getElementById('editMyPageBtn').style.display = 'inline-flex'; 
+                document.getElementById('secretHint').style.display = 'none'; 
                 tapCount = 0;
             } else {
                 tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
             }
         }
 
-        // ===== 4. КОНСТРУКТОР ДЛЯ ГОСТЕЙ (СОХРАНЕНИЕ В FIREBASE) =====
+        // ===== 4. СОЗДАНИЕ СТРАНИЦЫ =====
         function openCreatorModal() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
@@ -388,14 +270,19 @@
             
             content.innerHTML = `
                 <h2>Создать Bio</h2>
-                <div class="input-group"><label>Ссылка на фото (URL)</label><input type="text" id="g-avatar" placeholder="https://... или оставь пустым"></div>
+                <div class="input-group"><label>Ссылка на фото (URL)</label><input type="text" id="g-avatar" placeholder="https://..."></div>
                 <div class="input-group"><label>Имя (Никнейм)</label><input type="text" id="g-name" placeholder="Твое имя"></div>
-                <div class="input-group"><label>Описание (Био)</label><input type="text" id="g-bio" placeholder="статус. ссылки ниже"></div>
+                <div class="input-group"><label>Описание</label><input type="text" id="g-bio" placeholder="статус. ссылки ниже"></div>
                 
                 <div class="admin-link-item">
-                    <h3 style="font-size:12px; margin-bottom:10px; color:#888;">ТВОЯ ГЛАВНАЯ ССЫЛКА</h3>
-                    <div class="input-group"><label>Название (например, МОЙ ТГ)</label><input type="text" id="g-link-title" placeholder="TELEGRAM"></div>
-                    <div class="input-group"><label>URL Ссылка</label><input type="text" id="g-link-url" placeholder="https://t.me/username"></div>
+                    <h3 style="font-size:12px; color:#888;">ПЕРВАЯ ССЫЛКА</h3>
+                    <div class="input-group"><label>Название</label><input type="text" id="g-link-title" placeholder="TELEGRAM"></div>
+                    <div class="input-group"><label>URL</label><input type="text" id="g-link-url" placeholder="https://t.me/username"></div>
+                </div>
+
+                <div class="admin-link-item" style="border-color: #4ade80;">
+                    <div class="input-group"><label style="color: #4ade80;">Пароль (необязательно)</label><input type="password" id="g-pass" placeholder="Оставь пустым для открытого доступа"></div>
+                    <p style="font-size:11px; color:#888; margin-top:5px;">Если поставишь пароль, кнопка "Редактировать" будет скрыта. Чтобы она появилась, нужно будет нажать 5 раз на свое имя.</p>
                 </div>
 
                 <div class="admin-actions" style="margin-top: 20px;">
@@ -407,59 +294,131 @@
 
         async function saveGuestPage() {
             const btn = document.getElementById('saveGuestBtn');
-            btn.innerText = "Сохранение...";
-            btn.disabled = true;
+            const pass = document.getElementById('g-pass').value;
+            btn.innerText = "Сохранение..."; btn.disabled = true;
 
-            // Генерируем уникальный ID (короткий)
             const newId = Math.random().toString(36).substring(2, 8);
+            const user = window.auth.currentUser;
 
             const newData = {
+                ownerId: user ? user.uid : "unknown",
+                password: pass || null, 
                 profile: {
                     avatar: document.getElementById('g-avatar').value || "",
                     name: document.getElementById('g-name').value || "Без имени",
                     bio: document.getElementById('g-bio').value || "Моя страница"
                 },
                 title_ru: "ПРИВЕТ", title_ua: "ПРІВІТ",
-                links: [
-                    {
-                        icon: "🔗",
-                        title_ru: document.getElementById('g-link-title').value || "ССЫЛКА",
-                        title_ua: document.getElementById('g-link-title').value || "ССЫЛКА",
-                        url: document.getElementById('g-link-url').value || "https://",
-                        display_url: document.getElementById('g-link-url').value.replace('https://','') || "link"
-                    }
-                ]
+                links: [{ icon: "🔗", title_ru: document.getElementById('g-link-title').value || "ССЫЛКА", title_ua: document.getElementById('g-link-title').value || "ССЫЛКА", url: document.getElementById('g-link-url').value || "https://", display_url: document.getElementById('g-link-url').value.replace('https://','') || "link" }]
             };
 
             try {
-                // Сохраняем в Firestore!
                 await window.setDoc(window.doc(window.db, "pages", newId), newData);
-                
-                // Генерируем финальную ссылку
                 const baseUrl = window.location.origin + window.location.pathname;
                 const finalUrl = `${baseUrl}?u=${newId}`;
                 
-                // Показываем результат
                 document.getElementById('modalContent').innerHTML = `
                     <h2 style="color:#4ade80">Успешно!</h2>
-                    <p style="text-align:center; font-size:14px; color:#ccc; margin-bottom:20px;">Твоя страница создана и сохранена в базе данных.</p>
-                    <div class="input-group">
-                        <label>Твоя ссылка (скопируй её):</label>
-                        <input type="text" value="${finalUrl}" readonly onclick="this.select()">
-                    </div>
+                    <p style="text-align:center; font-size:14px; color:#ccc; margin-bottom:20px;">Страница создана.</p>
+                    <div class="input-group"><label>Твоя ссылка:</label><input type="text" value="${finalUrl}" readonly onclick="this.select()"></div>
+                    ${pass ? `<div class="input-group"><label style="color:#4ade80;">Твой пароль:</label><input type="text" value="${pass}" readonly></div>` : ''}
                     <button class="btn-primary" onclick="navigator.clipboard.writeText('${finalUrl}'); this.innerText='Скопировано!'; setTimeout(()=>this.innerText='Скопировать ссылку', 1500)">Скопировать ссылку</button>
-                    <button class="btn-cancel" style="width:100%; margin-top:10px;" onclick="document.getElementById('adminModal').classList.remove('active')">Закрыть</button>
+                    <button class="btn-cancel" style="width:100%; margin-top:10px;" onclick="window.location.href='${finalUrl}'">Перейти</button>
                 `;
-            } catch (e) {
-                console.error(e);
-                alert("Ошибка сохранения! Проверь настройки Firebase.");
-                btn.innerText = "Создать";
-                btn.disabled = false;
+            } catch (e) { alert("Ошибка!"); btn.innerText = "Создать"; btn.disabled = false; }
+        }
+
+        // ===== 5. РЕДАКТИРОВАНИЕ СВОЕЙ СТРАНИЦЫ =====
+        function requestEditPassword() {
+            const modal = document.getElementById('adminModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('active');
+            
+            if (pagePassword) {
+                content.innerHTML = `
+                    <h2>Вход</h2>
+                    <div class="input-group"><input type="password" id="edit-pass-input" placeholder="Введи свой пароль"></div>
+                    <button class="btn-primary" onclick="checkEditPassword()">Войти</button>
+                    <div id="authError" style="color:#ff4d4d; text-align:center; margin-top:10px;"></div>
+                `;
+                document.getElementById('edit-pass-input').focus();
+            } else {
+                renderEditForm();
             }
         }
 
-        // ===== 5. ТВОЯ ЛИЧНАЯ АДМИНКА (Сохранение в data.json на GitHub) =====
-        // (Это остается работать как раньше, через GitHub Token)
+        function checkEditPassword() {
+            const pass = document.getElementById('edit-pass-input').value;
+            if (pass === pagePassword) { 
+                renderEditForm(); 
+                document.getElementById('secretHint').style.display = 'none';
+            } 
+            else { document.getElementById('authError').innerText = "Неверный пароль!"; }
+        }
+
+        function renderEditForm() {
+            const content = document.getElementById('modalContent');
+            let linksHtml = '';
+            siteData.links.forEach((link, index) => {
+                linksHtml += `
+                    <div class="admin-link-item">
+                        <button class="btn-delete" onclick="deleteLink(${index})">Удалить</button>
+                        <div class="input-group"><label>Иконка</label><input type="text" value="${link.icon}" oninput="updateField(${index}, 'icon', this.value)"></div>
+                        <div class="input-group"><label>Название</label><input type="text" value="${link.title_ru}" oninput="updateField(${index}, 'title_ru', this.value); updateField(${index}, 'title_ua', this.value)"></div>
+                        <div class="input-group"><label>URL</label><input type="text" value="${link.url}" oninput="updateField(${index}, 'url', this.value)"></div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = `
+                <h2>Редактирование</h2>
+                <div class="admin-link-item" style="border-color: #fff;">
+                    <div class="input-group"><label>Фото (URL)</label><input type="text" value="${siteData.profile.avatar}" oninput="siteData.profile.avatar = this.value"></div>
+                    <div class="input-group"><label>Имя</label><input type="text" value="${siteData.profile.name}" oninput="siteData.profile.name = this.value"></div>
+                    <div class="input-group"><label>Био</label><input type="text" value="${siteData.profile.bio}" oninput="siteData.profile.bio = this.value"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label style="color:#4ade80;">Пароль страницы (оставь пустым, чтобы убрать)</label>
+                    <input type="text" id="e-pass" value="${pagePassword || ''}" placeholder="Пароль">
+                </div>
+
+                <div style="max-height: 30vh; overflow-y: auto; padding-right:5px;" id="edit-links-list">${linksHtml}</div>
+                <button class="btn-add" onclick="addNewLink()">+ Добавить ссылку</button>
+                
+                <div class="admin-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('active')">Отмена</button>
+                    <button class="btn-primary" onclick="saveMyChanges()">Сохранить</button>
+                </div>
+                <div id="status" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
+            `;
+        }
+
+        function updateField(index, field, value) { siteData.links[index][field] = value; }
+        function deleteLink(index) { if(confirm("Удалить?")) { siteData.links.splice(index, 1); renderEditForm(); } }
+        function addNewLink() {
+            siteData.links.push({ icon: "🔗", title_ru: "НОВАЯ", title_ua: "НОВА", url: "https://", display_url: "link" });
+            renderEditForm();
+        }
+
+        async function saveMyChanges() {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "Сохранение..."; statusEl.style.color = "#fff";
+            
+            const newPass = document.getElementById('e-pass').value.trim();
+
+            try {
+                await window.updateDoc(window.doc(window.db, "pages", currentUserId), { 
+                    profile: siteData.profile, 
+                    links: siteData.links,
+                    password: newPass || null
+                });
+                statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80";
+                setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); window.location.reload(); }, 1500);
+            } catch (e) { statusEl.innerText = "Ошибка."; statusEl.style.color = "#ff4d4d"; }
+        }
+
+        // ===== 6. ТВОЯ ЛИЧНАЯ АДМИНКА (Секретная) =====
         function openAdminModal() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
@@ -468,36 +427,17 @@
                 <h2>Вход в систему</h2>
                 <div class="input-group"><input type="password" id="adminPassword" placeholder="Пароль" style="text-align:center;"></div>
                 <button class="btn-primary" onclick="checkPassword()">Войти</button>
-                <div id="authError" style="color:#ff4d4d; text-align:center; margin-top:10px; font-size:12px;"></div>
+                <div id="authError" style="color:#ff4d4d; text-align:center; margin-top:10px;"></div>
             `;
             document.getElementById('adminPassword').focus();
         }
 
-        let failedAttempts = 0;
         function checkPassword() {
             const pass = document.getElementById('adminPassword').value;
-            if (pass === ADMIN_PASSWORD) { 
-                failedAttempts = 0;
-                renderAdminForm(); 
-            } else { 
-                failedAttempts++;
-                const errEl = document.getElementById('authError');
-                if (failedAttempts >= 3) {
-                    errEl.innerText = "ДОСТУП ЗАБЛОКИРОВАН НА 30 СЕКУНД";
-                    document.getElementById('adminPassword').disabled = true;
-                    document.querySelector('.btn-primary').disabled = true;
-                    setTimeout(() => {
-                        failedAttempts = 0; errEl.innerText = ""; 
-                        document.getElementById('adminPassword').disabled = false; 
-                        document.querySelector('.btn-primary').disabled = false;
-                    }, 30000);
-                } else {
-                    errEl.innerText = `Неверный пароль. Осталось попыток: ${3 - failedAttempts}`;
-                }
-            }
+            if (pass === ADMIN_PASSWORD) { renderAdminForm(); } 
+            else { document.getElementById('authError').innerText = "Неверный пароль!"; }
         }
 
-        // Твоя форма редактирования (для тебя)
         function renderAdminForm() {
             const content = document.getElementById('modalContent');
             let linksHtml = '';
@@ -505,17 +445,15 @@
                 linksHtml += `
                     <div class="admin-link-item">
                         <button class="btn-delete" onclick="deleteLink(${index})">Удалить</button>
-                        <div class="input-group"><label>Иконка (Эмодзи)</label><input type="text" value="${link.icon}" oninput="updateField(${index}, 'icon', this.value)"></div>
+                        <div class="input-group"><label>Иконка</label><input type="text" value="${link.icon}" oninput="updateField(${index}, 'icon', this.value)"></div>
                         <div class="input-group"><label>Название (RU)</label><input type="text" value="${link.title_ru}" oninput="updateField(${index}, 'title_ru', this.value)"></div>
                         <div class="input-group"><label>URL</label><input type="text" value="${link.url}" oninput="updateField(${index}, 'url', this.value)"></div>
                     </div>
                 `;
             });
-            
             content.innerHTML = `
                 <h2>Твоя админка</h2>
-                <p style="font-size:12px; color:#888; text-align:center; margin-bottom:15px;">Эти изменения сохранятся в data.json на GitHub</p>
-                <div class="input-group"><label>GitHub Токен</label><input type="password" id="ghToken" value="${localStorage.getItem('ghToken') || ''}"></div>
+                <div class="input-group"><label>GitHub Токен (data.json)</label><input type="password" id="ghToken" value="${localStorage.getItem('ghToken') || ''}"></div>
                 <div style="max-height: 40vh; overflow-y: auto; padding-right:5px; margin-top:15px;">${linksHtml}</div>
                 <div class="admin-actions">
                     <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('active')">Отмена</button>
@@ -525,38 +463,22 @@
             `;
         }
 
-        function updateField(index, field, value) { siteData.links[index][field] = value; }
-        function deleteLink(index) { if(confirm("Удалить?")) { siteData.links.splice(index, 1); renderAdminForm(); } }
-
         async function saveToGitHub() {
             const token = document.getElementById('ghToken').value.trim();
             const statusEl = document.getElementById('status');
             if (!token) { statusEl.innerText = "Введите токен!"; statusEl.style.color = "red"; return; }
             localStorage.setItem('ghToken', token);
             statusEl.innerText = "Сохранение..."; statusEl.style.color = "#fff";
-
             const apiUrl = `https://api.github.com/repos/offxll/bio/contents/data.json`;
             try {
                 const getRes = await fetch(apiUrl, { headers: { "Authorization": `token ${token}` } });
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(siteData, null, 2))));
-
-                const putRes = await fetch(apiUrl, {
-                    method: "PUT",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update data", content: contentEncoded, sha: sha })
-                });
-
-                if (putRes.ok) {
-                    statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80";
-                    setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); loadData(); }, 1500);
-                } else {
-                    statusEl.innerText = "Ошибка токена"; statusEl.style.color = "#ff4d4d";
-                }
+                const putRes = await fetch(apiUrl, { method: "PUT", headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update data", content: contentEncoded, sha: sha }) });
+                if (putRes.ok) { statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80"; setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); loadData(); }, 1500); } 
+                else { statusEl.innerText = "Ошибка токена"; statusEl.style.color = "#ff4d4d"; }
             } catch (e) { statusEl.innerText = "Ошибка сети"; statusEl.style.color = "#ff4d4d"; }
         }
-
-        // Функция перезагрузки
         function loadData() { initApp(); }
     </script>
 </body>
