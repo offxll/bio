@@ -28,7 +28,6 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
-        /* --- БОЛЬШАЯ ФОТОГРАФИЯ СВЕРХУ --- */
         .hero-section {
             width: 100%;
             height: 55vh;
@@ -43,7 +42,7 @@
             height: 100%;
             object-fit: cover;
             object-position: center 20%;
-            filter: grayscale(100%); /* Оставляем ч/б для стиля */
+            filter: grayscale(100%);
         }
 
         .hero-fade {
@@ -53,7 +52,6 @@
             pointer-events: none;
         }
 
-        /* --- КОНТЕНТ --- */
         .main-content {
             width: 100%;
             max-width: 480px;
@@ -77,58 +75,34 @@
 
         .profile-info { text-align: center; margin-bottom: 35px; display: flex; flex-direction: column; align-items: center; }
         
+        /* Делаем имя кликабельным для секретного входа */
         .name-big { 
             font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 15px; 
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            cursor: pointer; user-select: none; /* Убираем выделение при клике */
+            -webkit-tap-highlight-color: transparent;
         }
         
-        /* Новый стиль для Био */
-        .bio-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
+        .bio-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bio-main { font-size: 15px; color: var(--text-main); font-weight: 400; letter-spacing: 0.5px; }
+        .bio-sub { font-size: 12px; color: var(--text-sub); font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
 
-        .bio-main { 
-            font-size: 15px; color: var(--text-main); font-weight: 400; letter-spacing: 0.5px;
-        }
-
-        .bio-sub { 
-            font-size: 12px; color: var(--text-sub); font-weight: 400; letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* --- СТЕКЛЯННЫЕ КНОПКИ --- */
         .links-list { width: 100%; display: flex; flex-direction: column; gap: 14px; }
         
         .link-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            text-decoration: none;
-            color: var(--text-main);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            position: relative;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            text-decoration: none; color: var(--text-main); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); position: relative;
         }
         
         .link-card:hover {
-            background: var(--glass-hover);
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: var(--glass-hover); transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.3);
         }
 
         .link-left { display: flex; align-items: center; gap: 15px; width: 85%; }
-        
         .icon-box { font-size: 22px; }
-        
         .link-info { display: flex; flex-direction: column; overflow: hidden; }
         .link-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .link-desc { font-size: 12px; color: var(--text-sub); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -139,19 +113,21 @@
         .copy-btn {
             background: rgba(255,255,255,0.1); border: none; border-radius: 6px;
             color: #fff; padding: 5px 8px; font-size: 12px; cursor: pointer;
-            margin-left: 10px; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center;
+            margin-left: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
         .copy-btn:hover { background: rgba(255,255,255,0.3); }
 
+        /* СКРЫТАЯ КНОПКА НАСТРОЕК */
         .settings-btn { 
             position: fixed; bottom: 30px; right: 30px; 
             width: 55px; height: 55px; border-radius: 50%; 
             background: rgba(20, 20, 20, 0.8); border: 1px solid var(--glass-border); 
-            color: #fff; font-size: 20px; display: flex; justify-content: center; align-items: center; 
+            color: #fff; font-size: 20px; display: none; /* По умолчанию СКРЫТА */
+            justify-content: center; align-items: center; 
             cursor: pointer; z-index: 999; backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.3s;
         }
+        .settings-btn.visible { display: flex; }
         .settings-btn:hover { background: #333; transform: rotate(90deg); }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; }
@@ -196,9 +172,9 @@
 
     <div class="main-content">
         <div class="profile-info">
-            <h1 class="name-big" id="profileName">MOLODOY</h1>
+            <!-- Вешаем событие клика на имя для секретного входа -->
+            <h1 class="name-big" id="profileName" onclick="handleSecretTap()">MOLODOY</h1>
             
-            <!-- Блок с разделенным Био -->
             <div class="bio-container" id="profileBioContainer">
                 <div class="bio-main" id="bioMain">теневая экономика души</div>
                 <div class="bio-sub" id="bioSub">мои сети ниже</div>
@@ -208,7 +184,8 @@
         <div class="links-list" id="linksContainer"></div>
     </div>
 
-    <div class="settings-btn" onclick="openAdminModal()">⚙️</div>
+    <!-- Кнопка настроек (скрыта по умолчанию) -->
+    <div class="settings-btn" id="adminGear" onclick="openAdminModal()">⚙️</div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content" id="modalContent"></div>
@@ -227,6 +204,25 @@
         
         if (isWebView) {
             document.getElementById('browser-warning').style.display = 'block';
+        }
+
+        // ===== СЕКРЕТНЫЙ ВХОД (5 кликов по имени) =====
+        let tapCount = 0;
+        let tapTimer;
+
+        function handleSecretTap() {
+            tapCount++;
+            clearTimeout(tapTimer);
+            
+            // Если 5 кликов подряд — показываем шестеренку
+            if (tapCount >= 5) {
+                document.getElementById('adminGear').classList.add('visible');
+                tapCount = 0;
+                // alert("Секретный вход активирован!"); // Можно раскомментировать для проверки
+            } else {
+                // Сбрасываем счетчик, если прошло больше 1.5 секунд
+                tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+            }
         }
 
         async function loadData() {
@@ -250,7 +246,6 @@
                 }
                 document.getElementById('profileName').innerText = siteData.profile.name;
                 
-                // Умное разделение текста по точке
                 const fullBio = siteData.profile.bio || "";
                 const parts = fullBio.split('.');
                 
@@ -259,7 +254,7 @@
                     document.getElementById('bioSub').innerText = parts.slice(1).join('.').trim();
                 } else {
                     document.getElementById('bioMain').innerText = fullBio;
-                    document.getElementById('bioSub').innerText = ""; // Если нет второй части, скрываем
+                    document.getElementById('bioSub').innerText = ""; 
                 }
             }
 
@@ -333,14 +328,37 @@
                 <h2>Вход в систему</h2>
                 <div class="input-group"><input type="password" id="adminPassword" placeholder="Пароль" style="text-align:center;"></div>
                 <button class="btn-primary" onclick="checkPassword()">Войти</button>
+                <div id="authError" style="color:#ff4d4d; text-align:center; margin-top:10px; font-size:12px;"></div>
             `;
             document.getElementById('adminPassword').focus();
         }
 
+        // Защита от подбора пароля
+        let failedAttempts = 0;
+
         function checkPassword() {
             const pass = document.getElementById('adminPassword').value;
-            if (pass === ADMIN_PASSWORD) { renderAdminForm(); } 
-            else { alert("Неверный пароль!"); }
+            if (pass === ADMIN_PASSWORD) { 
+                failedAttempts = 0;
+                renderAdminForm(); 
+            } 
+            else { 
+                failedAttempts++;
+                const errEl = document.getElementById('authError');
+                if (failedAttempts >= 3) {
+                    errEl.innerText = "ДОСТУП ЗАБЛОКИРОВАН НА 30 СЕКУНД";
+                    document.getElementById('adminPassword').disabled = true;
+                    document.querySelector('.btn-primary').disabled = true;
+                    setTimeout(() => {
+                        failedAttempts = 0;
+                        errEl.innerText = "";
+                        document.getElementById('adminPassword').disabled = false;
+                        document.querySelector('.btn-primary').disabled = false;
+                    }, 30000);
+                } else {
+                    errEl.innerText = `Неверный пароль. Осталось попыток: ${3 - failedAttempts}`;
+                }
+            }
         }
 
         function renderAdminForm() {
