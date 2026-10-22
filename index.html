@@ -3,8 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>offxll // OBSIDIAN</title>
+    <title>OBSIDIAN // Bio Constructor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Подключаем Firebase SDK (Модульный) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCMj2Ao9IGDU2tfLru9vKHiHiiZCVBp66w",
+        authDomain: "offxll-bio.firebaseapp.com",
+        projectId: "offxll-bio",
+        storageBucket: "offxll-bio.firebasestorage.app",
+        messagingSenderId: "1083570296924",
+        appId: "1:1083570296924:web:c0da8ac1a6abf935cd6e99"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      
+      // Прокидываем функции в глобальную область видимости для обычного скрипта
+      window.db = db;
+      window.doc = doc;
+      window.getDoc = getDoc;
+      window.setDoc = setDoc;
+      
+      window.firebaseReady = true;
+      window.dispatchEvent(new Event('firebaseLoaded'));
+    </script>
+
     <style>
         :root {
             --bg-color: #050505;
@@ -13,6 +41,7 @@
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --glass-hover: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -27,6 +56,9 @@
             overflow-x: hidden;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
+
+        /* Экран загрузки */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#050505; display:flex; justify-content:center; align-items:center; z-index:99999; color:#fff; font-size:14px; transition:opacity 0.5s; }
 
         .hero-section {
             width: 100%;
@@ -75,11 +107,10 @@
 
         .profile-info { text-align: center; margin-bottom: 35px; display: flex; flex-direction: column; align-items: center; }
         
-        /* Делаем имя кликабельным для секретного входа */
         .name-big { 
             font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 15px; 
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            cursor: pointer; user-select: none; /* Убираем выделение при клике */
+            cursor: pointer; user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
         
@@ -95,6 +126,7 @@
             border-radius: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             text-decoration: none; color: var(--text-main); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); position: relative;
+            cursor: pointer;
         }
         
         .link-card:hover {
@@ -117,12 +149,11 @@
         }
         .copy-btn:hover { background: rgba(255,255,255,0.3); }
 
-        /* СКРЫТАЯ КНОПКА НАСТРОЕК */
         .settings-btn { 
             position: fixed; bottom: 30px; right: 30px; 
             width: 55px; height: 55px; border-radius: 50%; 
             background: rgba(20, 20, 20, 0.8); border: 1px solid var(--glass-border); 
-            color: #fff; font-size: 20px; display: none; /* По умолчанию СКРЫТА */
+            color: #fff; font-size: 20px; display: none; 
             justify-content: center; align-items: center; 
             cursor: pointer; z-index: 999; backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.3s;
@@ -130,7 +161,15 @@
         .settings-btn.visible { display: flex; }
         .settings-btn:hover { background: #333; transform: rotate(90deg); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; }
+        .create-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            color: #888; padding: 12px 24px; border-radius: 20px; cursor: pointer; 
+            font-size: 13px; transition: 0.3s; margin-top: 40px;
+        }
+        .create-btn:hover { color: #fff; border-color: #fff; }
+
+        /* Модалка */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0f0f11; border: 1px solid #333; padding: 25px; border-radius: 20px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         .modal-content h2 { color: #fff; margin-bottom: 20px; font-weight: 600; font-size: 20px; text-align: center; }
@@ -157,6 +196,8 @@
     </style>
 </head>
 <body>
+    <div id="loader">Загрузка системы...</div>
+
     <div id="browser-warning">
         Вы в браузере соцсети. Для корректного перехода нажмите <b>(...)</b> и выберите <b>«Открыть в браузере»</b>.
     </div>
@@ -172,9 +213,7 @@
 
     <div class="main-content">
         <div class="profile-info">
-            <!-- Вешаем событие клика на имя для секретного входа -->
             <h1 class="name-big" id="profileName" onclick="handleSecretTap()">MOLODOY</h1>
-            
             <div class="bio-container" id="profileBioContainer">
                 <div class="bio-main" id="bioMain">теневая экономика души</div>
                 <div class="bio-sub" id="bioSub">мои сети ниже</div>
@@ -182,59 +221,68 @@
         </div>
 
         <div class="links-list" id="linksContainer"></div>
+        
+        <button onclick="openCreatorModal()" class="create-btn">
+            Создать свою страницу
+        </button>
     </div>
 
-    <!-- Кнопка настроек (скрыта по умолчанию) -->
     <div class="settings-btn" id="adminGear" onclick="openAdminModal()">⚙️</div>
-
-    <div class="modal" id="adminModal">
-        <div class="modal-content" id="modalContent"></div>
-    </div>
+    <div class="modal" id="adminModal"><div class="modal-content" id="modalContent"></div></div>
 
     <script>
         const ADMIN_PASSWORD = "admin123"; 
-        const GITHUB_USER = "offxll"; 
-        const GITHUB_REPO = "bio";    
         
         let siteData = null;
         let currentLang = localStorage.getItem('siteLang') || 'ru';
+        let currentUserId = null;
 
         var ua = navigator.userAgent || navigator.vendor || window.opera;
-        var isWebView = (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1 || ua.indexOf("FBAN") > -1);
-        
-        if (isWebView) {
+        if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1 || ua.indexOf("FBAN") > -1) {
             document.getElementById('browser-warning').style.display = 'block';
         }
 
-        // ===== СЕКРЕТНЫЙ ВХОД (5 кликов по имени) =====
-        let tapCount = 0;
-        let tapTimer;
+        // ===== 1. ЗАГРУЗКА ДАННЫХ =====
+        async function initApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('u'); 
 
-        function handleSecretTap() {
-            tapCount++;
-            clearTimeout(tapTimer);
-            
-            // Если 5 кликов подряд — показываем шестеренку
-            if (tapCount >= 5) {
-                document.getElementById('adminGear').classList.add('visible');
-                tapCount = 0;
-                // alert("Секретный вход активирован!"); // Можно раскомментировать для проверки
+            if (userId) {
+                // Грузим страницу конкретного пользователя из Firebase
+                currentUserId = userId;
+                try {
+                    const docRef = window.doc(window.db, "pages", userId);
+                    const docSnap = await window.getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        siteData = docSnap.data();
+                    } else {
+                        alert("Страница не найдена!");
+                        window.location.href = window.location.pathname; 
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Ошибка загрузки данных");
+                }
             } else {
-                // Сбрасываем счетчик, если прошло больше 1.5 секунд
-                tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+                // Если ID нет, грузим твой базовый data.json (для главной)
+                try {
+                    const res = await fetch(`data.json?t=${Date.now()}`);
+                    siteData = await res.json();
+                } catch (e) {
+                    document.getElementById('linksContainer').innerHTML = `<p style="color:red;text-align:center;">ERROR: DATA_NOT_FOUND</p>`;
+                }
             }
+
+            renderUI();
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
         }
 
-        async function loadData() {
-            try {
-                const res = await fetch(`data.json?t=${Date.now()}`);
-                siteData = await res.json();
-                renderUI();
-            } catch (e) {
-                document.getElementById('linksContainer').innerHTML = `<p style="color:red;text-align:center;">ERROR: DATA_NOT_FOUND</p>`;
-            }
-        }
+        if (window.firebaseReady) { initApp(); } 
+        else { window.addEventListener('firebaseLoaded', initApp); }
 
+        // ===== 2. ОТРИСОВКА =====
         function renderUI() {
             if(!siteData) return;
             
@@ -290,12 +338,11 @@
                     }
 
                     if (isTelegram) {
-                        if (isWebView) {
+                        if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1) {
                             window.open(link.url, '_blank');
                         } else {
                             const username = link.url.split('/').pop().split('?')[0];
-                            const tgAppUrl = `tg://resolve?domain=${username}`;
-                            window.location.href = tgAppUrl;
+                            window.location.href = `tg://resolve?domain=${username}`;
                             setTimeout(() => { window.open(link.url, '_blank'); }, 1500);
                         }
                     } else {
@@ -319,7 +366,100 @@
         }
         function toggleLanguage() { setLanguage(currentLang === 'ru' ? 'ua' : 'ru'); }
 
-        // ===== АДМИНКА =====
+        // ===== 3. СЕКРЕТНЫЙ ВХОД =====
+        let tapCount = 0;
+        let tapTimer;
+        function handleSecretTap() {
+            tapCount++;
+            clearTimeout(tapTimer);
+            if (tapCount >= 5) {
+                document.getElementById('adminGear').classList.add('visible');
+                tapCount = 0;
+            } else {
+                tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+            }
+        }
+
+        // ===== 4. КОНСТРУКТОР ДЛЯ ГОСТЕЙ (СОХРАНЕНИЕ В FIREBASE) =====
+        function openCreatorModal() {
+            const modal = document.getElementById('adminModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('active');
+            
+            content.innerHTML = `
+                <h2>Создать Bio</h2>
+                <div class="input-group"><label>Ссылка на фото (URL)</label><input type="text" id="g-avatar" placeholder="https://... или оставь пустым"></div>
+                <div class="input-group"><label>Имя (Никнейм)</label><input type="text" id="g-name" placeholder="Твое имя"></div>
+                <div class="input-group"><label>Описание (Био)</label><input type="text" id="g-bio" placeholder="статус. ссылки ниже"></div>
+                
+                <div class="admin-link-item">
+                    <h3 style="font-size:12px; margin-bottom:10px; color:#888;">ТВОЯ ГЛАВНАЯ ССЫЛКА</h3>
+                    <div class="input-group"><label>Название (например, МОЙ ТГ)</label><input type="text" id="g-link-title" placeholder="TELEGRAM"></div>
+                    <div class="input-group"><label>URL Ссылка</label><input type="text" id="g-link-url" placeholder="https://t.me/username"></div>
+                </div>
+
+                <div class="admin-actions" style="margin-top: 20px;">
+                    <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('active')">Отмена</button>
+                    <button class="btn-primary" id="saveGuestBtn" onclick="saveGuestPage()">Создать</button>
+                </div>
+            `;
+        }
+
+        async function saveGuestPage() {
+            const btn = document.getElementById('saveGuestBtn');
+            btn.innerText = "Сохранение...";
+            btn.disabled = true;
+
+            // Генерируем уникальный ID (короткий)
+            const newId = Math.random().toString(36).substring(2, 8);
+
+            const newData = {
+                profile: {
+                    avatar: document.getElementById('g-avatar').value || "",
+                    name: document.getElementById('g-name').value || "Без имени",
+                    bio: document.getElementById('g-bio').value || "Моя страница"
+                },
+                title_ru: "ПРИВЕТ", title_ua: "ПРІВІТ",
+                links: [
+                    {
+                        icon: "🔗",
+                        title_ru: document.getElementById('g-link-title').value || "ССЫЛКА",
+                        title_ua: document.getElementById('g-link-title').value || "ССЫЛКА",
+                        url: document.getElementById('g-link-url').value || "https://",
+                        display_url: document.getElementById('g-link-url').value.replace('https://','') || "link"
+                    }
+                ]
+            };
+
+            try {
+                // Сохраняем в Firestore!
+                await window.setDoc(window.doc(window.db, "pages", newId), newData);
+                
+                // Генерируем финальную ссылку
+                const baseUrl = window.location.origin + window.location.pathname;
+                const finalUrl = `${baseUrl}?u=${newId}`;
+                
+                // Показываем результат
+                document.getElementById('modalContent').innerHTML = `
+                    <h2 style="color:#4ade80">Успешно!</h2>
+                    <p style="text-align:center; font-size:14px; color:#ccc; margin-bottom:20px;">Твоя страница создана и сохранена в базе данных.</p>
+                    <div class="input-group">
+                        <label>Твоя ссылка (скопируй её):</label>
+                        <input type="text" value="${finalUrl}" readonly onclick="this.select()">
+                    </div>
+                    <button class="btn-primary" onclick="navigator.clipboard.writeText('${finalUrl}'); this.innerText='Скопировано!'; setTimeout(()=>this.innerText='Скопировать ссылку', 1500)">Скопировать ссылку</button>
+                    <button class="btn-cancel" style="width:100%; margin-top:10px;" onclick="document.getElementById('adminModal').classList.remove('active')">Закрыть</button>
+                `;
+            } catch (e) {
+                console.error(e);
+                alert("Ошибка сохранения! Проверь настройки Firebase.");
+                btn.innerText = "Создать";
+                btn.disabled = false;
+            }
+        }
+
+        // ===== 5. ТВОЯ ЛИЧНАЯ АДМИНКА (Сохранение в data.json на GitHub) =====
+        // (Это остается работать как раньше, через GitHub Token)
         function openAdminModal() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
@@ -333,16 +473,13 @@
             document.getElementById('adminPassword').focus();
         }
 
-        // Защита от подбора пароля
         let failedAttempts = 0;
-
         function checkPassword() {
             const pass = document.getElementById('adminPassword').value;
             if (pass === ADMIN_PASSWORD) { 
                 failedAttempts = 0;
                 renderAdminForm(); 
-            } 
-            else { 
+            } else { 
                 failedAttempts++;
                 const errEl = document.getElementById('authError');
                 if (failedAttempts >= 3) {
@@ -350,9 +487,8 @@
                     document.getElementById('adminPassword').disabled = true;
                     document.querySelector('.btn-primary').disabled = true;
                     setTimeout(() => {
-                        failedAttempts = 0;
-                        errEl.innerText = "";
-                        document.getElementById('adminPassword').disabled = false;
+                        failedAttempts = 0; errEl.innerText = ""; 
+                        document.getElementById('adminPassword').disabled = false; 
                         document.querySelector('.btn-primary').disabled = false;
                     }, 30000);
                 } else {
@@ -361,18 +497,9 @@
             }
         }
 
+        // Твоя форма редактирования (для тебя)
         function renderAdminForm() {
             const content = document.getElementById('modalContent');
-            
-            let profileHtml = `
-                <div class="admin-link-item" style="border-color: #fff;">
-                    <h3 style="margin-bottom: 10px; font-size: 14px; text-transform: uppercase;">Профиль</h3>
-                    <div class="input-group"><label>Ссылка на фото (URL или avatar.jpg)</label><input type="text" value="${siteData.profile?.avatar || ''}" oninput="siteData.profile.avatar = this.value"></div>
-                    <div class="input-group"><label>Имя (Никнейм)</label><input type="text" value="${siteData.profile?.name || ''}" oninput="siteData.profile.name = this.value"></div>
-                    <div class="input-group"><label>Описание (Био) - разделяй точкой</label><input type="text" value="${siteData.profile?.bio || ''}" oninput="siteData.profile.bio = this.value"></div>
-                </div>
-            `;
-
             let linksHtml = '';
             siteData.links.forEach((link, index) => {
                 linksHtml += `
@@ -380,71 +507,57 @@
                         <button class="btn-delete" onclick="deleteLink(${index})">Удалить</button>
                         <div class="input-group"><label>Иконка (Эмодзи)</label><input type="text" value="${link.icon}" oninput="updateField(${index}, 'icon', this.value)"></div>
                         <div class="input-group"><label>Название (RU)</label><input type="text" value="${link.title_ru}" oninput="updateField(${index}, 'title_ru', this.value)"></div>
-                        <div class="input-group"><label>Название (UA)</label><input type="text" value="${link.title_ua}" oninput="updateField(${index}, 'title_ua', this.value)"></div>
-                        <div class="input-group"><label>Ссылка (URL)</label><input type="text" value="${link.url}" oninput="updateField(${index}, 'url', this.value)"></div>
-                        <div class="input-group"><label>Текст ссылки</label><input type="text" value="${link.display_url}" oninput="updateField(${index}, 'display_url', this.value)"></div>
+                        <div class="input-group"><label>URL</label><input type="text" value="${link.url}" oninput="updateField(${index}, 'url', this.value)"></div>
                     </div>
                 `;
             });
-
+            
             content.innerHTML = `
-                <h2>Настройки</h2>
-                <div class="input-group"><label>GitHub Токен (для сохранения)</label><input type="password" id="ghToken" value="${localStorage.getItem('ghToken') || ''}"></div>
-                <div style="max-height: 45vh; overflow-y: auto; padding-right: 5px; margin-top: 15px;" id="admin-links-list">
-                    ${profileHtml}
-                    ${linksHtml}
-                </div>
-                <button class="btn-add" onclick="addNewLink()">+ Добавить кнопку</button>
+                <h2>Твоя админка</h2>
+                <p style="font-size:12px; color:#888; text-align:center; margin-bottom:15px;">Эти изменения сохранятся в data.json на GitHub</p>
+                <div class="input-group"><label>GitHub Токен</label><input type="password" id="ghToken" value="${localStorage.getItem('ghToken') || ''}"></div>
+                <div style="max-height: 40vh; overflow-y: auto; padding-right:5px; margin-top:15px;">${linksHtml}</div>
                 <div class="admin-actions">
                     <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('active')">Отмена</button>
                     <button class="btn-primary" onclick="saveToGitHub()">Сохранить</button>
                 </div>
-                <div id="status" style="margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold;"></div>
+                <div id="status" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
             `;
         }
 
         function updateField(index, field, value) { siteData.links[index][field] = value; }
-        function deleteLink(index) { if(confirm("Удалить эту ссылку?")) { siteData.links.splice(index, 1); renderAdminForm(); } }
-        function addNewLink() {
-            siteData.links.push({ icon: "🔗", title_ru: "НОВАЯ ССЫЛКА", title_ua: "НОВЕ ПОСИЛАННЯ", url: "https://", display_url: "link.com" });
-            renderAdminForm();
-            setTimeout(() => { const list = document.getElementById('admin-links-list'); list.scrollTop = list.scrollHeight; }, 100);
-        }
+        function deleteLink(index) { if(confirm("Удалить?")) { siteData.links.splice(index, 1); renderAdminForm(); } }
 
         async function saveToGitHub() {
             const token = document.getElementById('ghToken').value.trim();
             const statusEl = document.getElementById('status');
             if (!token) { statusEl.innerText = "Введите токен!"; statusEl.style.color = "red"; return; }
             localStorage.setItem('ghToken', token);
-            
             statusEl.innerText = "Сохранение..."; statusEl.style.color = "#fff";
 
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data.json`;
+            const apiUrl = `https://api.github.com/repos/offxll/bio/contents/data.json`;
             try {
                 const getRes = await fetch(apiUrl, { headers: { "Authorization": `token ${token}` } });
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
-                
-                const jsonString = JSON.stringify(siteData, null, 2);
-                const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
+                const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(siteData, null, 2))));
 
                 const putRes = await fetch(apiUrl, {
                     method: "PUT",
                     headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Обновление через админку", content: contentEncoded, sha: sha })
+                    body: JSON.stringify({ message: "Update data", content: contentEncoded, sha: sha })
                 });
 
                 if (putRes.ok) {
-                    statusEl.innerText = "УСПЕШНО СОХРАНЕНО!";
-                    statusEl.style.color = "#4ade80";
+                    statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80";
                     setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); loadData(); }, 1500);
                 } else {
-                    const err = await putRes.json();
-                    statusEl.innerText = `Ошибка: ${err.message}`;
-                    statusEl.style.color = "#ff4d4d";
+                    statusEl.innerText = "Ошибка токена"; statusEl.style.color = "#ff4d4d";
                 }
-            } catch (e) { statusEl.innerText = "Ошибка сети."; statusEl.style.color = "#ff4d4d"; }
+            } catch (e) { statusEl.innerText = "Ошибка сети"; statusEl.style.color = "#ff4d4d"; }
         }
-        loadData();
+
+        // Функция перезагрузки
+        function loadData() { initApp(); }
     </script>
 </body>
 </html>
