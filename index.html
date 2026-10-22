@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>offxll // OBSIDIAN</title>
-    <!-- Подключаем премиальный шрифт Inter -->
+    <!-- Премиальный шрифт Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,14 +26,13 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            /* Легкий шум на фоне для дорогого эффекта */
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
         /* --- БОЛЬШАЯ ФОТОГРАФИЯ СВЕРХУ --- */
         .hero-section {
             width: 100%;
-            height: 55vh; /* Занимает чуть больше половины экрана */
+            height: 55vh;
             position: relative;
             display: flex;
             justify-content: center;
@@ -44,16 +43,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center 20%; /* Центрируем фото */
+            object-position: center 20%;
         }
 
-        /* Плавный переход от фото к черному фону */
         .hero-fade {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
+            bottom: 0; left: 0; width: 100%; height: 150px;
             background: linear-gradient(to top, var(--bg-color) 0%, rgba(5,5,5,0) 100%);
             pointer-events: none;
         }
@@ -63,7 +58,7 @@
             width: 100%;
             max-width: 480px;
             padding: 0 20px 100px 20px;
-            margin-top: -60px; /* Наезжаем на фото */
+            margin-top: -60px;
             position: relative;
             z-index: 10;
             display: flex;
@@ -71,7 +66,6 @@
             align-items: center;
         }
 
-        /* Переключатель языка */
         .top-bar { position: absolute; top: 20px; right: 20px; z-index: 100; }
         .lang-btn { 
             background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
@@ -104,31 +98,42 @@
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 18px;
-            backdrop-filter: blur(16px); /* Эффект матового стекла */
+            backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             text-decoration: none;
             color: var(--text-main);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
         
         .link-card:hover {
             background: var(--glass-hover);
             transform: translateY(-3px);
             border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
-        .link-left { display: flex; align-items: center; gap: 15px; }
+        .link-left { display: flex; align-items: center; gap: 15px; width: 85%; }
         
         .icon-box { font-size: 22px; }
         
-        .link-info { display: flex; flex-direction: column; }
+        .link-info { display: flex; flex-direction: column; overflow: hidden; }
         .link-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
-        .link-desc { font-size: 12px; color: var(--text-sub); font-weight: 400; }
+        .link-desc { font-size: 12px; color: var(--text-sub); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .arrow { color: rgba(255,255,255,0.4); font-size: 18px; transition: 0.3s; }
         .link-card:hover .arrow { color: #fff; transform: translateX(3px); }
+
+        /* Иконка копирования для ТГ */
+        .copy-btn {
+            background: rgba(255,255,255,0.1);
+            border: none; border-radius: 6px;
+            color: #fff; padding: 5px 8px;
+            font-size: 12px; cursor: pointer;
+            margin-left: 10px; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.3); }
 
         /* Кнопка настроек */
         .settings-btn { 
@@ -186,7 +191,6 @@
 
     <!-- Блок с большой фотографией -->
     <div class="hero-section">
-        <!-- Фото будет подгружаться скриптом -->
         <img src="" id="heroImage" class="hero-image" alt="Profile Photo">
         <div class="hero-fade"></div>
     </div>
@@ -219,7 +223,9 @@
 
         // Проверка на WebView
         var ua = navigator.userAgent || navigator.vendor || window.opera;
-        if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1) {
+        var isWebView = (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1 || ua.indexOf("FBAN") > -1);
+        
+        if (isWebView) {
             document.getElementById('browser-warning').style.display = 'block';
         }
 
@@ -241,7 +247,6 @@
                 if(siteData.profile.avatar && siteData.profile.avatar !== "") {
                     document.getElementById('heroImage').src = siteData.profile.avatar;
                 } else {
-                    // Если фото нет, ставим темный градиент-заглушку
                     document.getElementById('heroImage').src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
                 }
                 document.getElementById('profileName').innerText = siteData.profile.name;
@@ -252,13 +257,15 @@
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
             
-            siteData.links.forEach((link) => {
-                const a = document.createElement('a');
-                a.href = link.url;
-                a.target = "_blank";
-                a.rel = "noopener noreferrer";
-                a.className = "link-card";
-                a.innerHTML = `
+            siteData.links.forEach((link, index) => {
+                const isTelegram = link.url.includes('t.me/') || link.url.includes('telegram.me/');
+                
+                // Создаем обертку (div), а не ссылку (a), чтобы повесить кастомный клик
+                const div = document.createElement('div');
+                div.className = "link-card";
+                
+                // HTML внутри кнопки
+                div.innerHTML = `
                     <div class="link-left">
                         <div class="icon-box">${link.icon}</div>
                         <div class="link-info">
@@ -266,9 +273,46 @@
                             <div class="link-desc">${link.display_url}</div>
                         </div>
                     </div>
-                    <div class="arrow">→</div>
+                    ${isTelegram ? '<button class="copy-btn" title="Скопировать ссылку">📋</button>' : '<div class="arrow">→</div>'}
                 `;
-                container.appendChild(a);
+
+                // Логика клика по самой карточке
+                div.addEventListener('click', function(e) {
+                    // Если нажали на кнопку копирования - не переходим по ссылке
+                    if (e.target.classList.contains('copy-btn')) {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(link.url).then(() => {
+                            const originalText = e.target.innerText;
+                            e.target.innerText = '✅';
+                            setTimeout(() => e.target.innerText = originalText, 1500);
+                        });
+                        return;
+                    }
+
+                    // Логика для Телеграма
+                    if (isTelegram) {
+                        if (isWebView) {
+                            // В ТИКТОКЕ: принудительно открываем веб-версию (без ошибок)
+                            window.open(link.url, '_blank');
+                        } else {
+                            // В ОБЫЧНОМ БРАУЗЕРЕ: пытаемся открыть приложение
+                            const username = link.url.split('/').pop().split('?')[0]; // достаем ник
+                            const tgAppUrl = `tg://resolve?domain=${username}`;
+                            
+                            window.location.href = tgAppUrl;
+                            
+                            // Если приложение не открылось за 1.5 сек, открываем веб-версию
+                            setTimeout(() => {
+                                window.open(link.url, '_blank');
+                            }, 1500);
+                        }
+                    } else {
+                        // Обычные ссылки (Инст, ТТ и т.д.)
+                        window.open(link.url, '_blank');
+                    }
+                });
+
+                container.appendChild(div);
             });
             setLanguage(currentLang);
         }
