@@ -6,29 +6,6 @@
     <title>OBSIDIAN // Bio Constructor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyCMj2Ao9IGDU2tfLru9vKHiHiiZCVBp66w",
-        authDomain: "offxll-bio.firebaseapp.com",
-        projectId: "offxll-bio",
-        storageBucket: "offxll-bio.firebasestorage.app",
-        messagingSenderId: "1083570296924",
-        appId: "1:1083570296924:web:c0da8ac1a6abf935cd6e99"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      
-      window.db = db; window.doc = doc; window.getDoc = getDoc; window.setDoc = setDoc; window.updateDoc = updateDoc; window.auth = auth;
-      window.firebaseReady = true;
-      window.dispatchEvent(new Event('firebaseLoaded'));
-    </script>
-
     <style>
         :root { --bg-color: #050505; --text-main: #ffffff; --text-sub: #888888; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-hover: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -88,7 +65,6 @@
         #browser-warning { display: none; background: #111; color: #fff; padding: 15px; text-align: center; border-bottom: 1px solid #333; font-size: 13px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; }
         .edit-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 16px; border-radius: 12px; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
 
-        /* ПОДСКАЗКА (Видна только создателю) */
         .hint-text { font-size: 11px; color: #444; text-align: center; margin-top: 40px; line-height: 1.5; display: none; }
         .hint-text b { color: #777; }
     </style>
@@ -119,7 +95,6 @@
             Создать свою страницу
         </button>
 
-        <!-- ПОДСКАЗКА (Появится только у владельца страницы) -->
         <div class="hint-text" id="secretHint">
             Твоя страница защищена.<br>
             Чтобы появилась кнопка редактирования, <b>нажми 5 раз на свое имя</b> вверху.
@@ -129,23 +104,50 @@
     <div class="settings-btn" id="adminGear" onclick="openAdminModal()">⚙️</div>
     <div class="modal" id="adminModal"><div class="modal-content" id="modalContent"></div></div>
 
+    <!-- 1. Классические скрипты Firebase (без модулей) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
     <script>
         const ADMIN_PASSWORD = "admin123"; 
         let siteData = null;
         let currentLang = localStorage.getItem('siteLang') || 'ru';
         let currentUserId = null;
         let pagePassword = null; 
-        let isCreator = false; // Переменная: является ли зашедший создателем
+        let isCreator = false;
+        let db, auth;
 
         var ua = navigator.userAgent || navigator.vendor || window.opera;
         if (ua.indexOf("TikTok") > -1 || ua.indexOf("Instagram") > -1 || ua.indexOf("FBAN") > -1) {
             document.getElementById('browser-warning').style.display = 'block';
         }
 
-        // ===== 1. ИНИЦИАЛИЗАЦИЯ =====
+        // ===== 1. ИНИЦИАЛИЗАЦИЯ FIREBASE =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMj2Ao9IGDU2tfLru9vKHiHiiZCVBp66w",
+            authDomain: "offxll-bio.firebaseapp.com",
+            projectId: "offxll-bio",
+            storageBucket: "offxll-bio.firebasestorage.app",
+            messagingSenderId: "1083570296924",
+            appId: "1:1083570296924:web:c0da8ac1a6abf935cd6e99"
+        };
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            initApp();
+        } catch (e) {
+            console.error("Firebase init error:", e);
+            document.getElementById('loader').innerText = "Ошибка подключения к БД";
+        }
+
         async function initApp() {
-            window.auth.onAuthStateChanged(async (user) => {
-                if (!user) await window.signInAnonymously(window.auth);
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    try { await auth.signInAnonymously(); } catch(e) { console.error(e); }
+                }
 
                 const urlParams = new URLSearchParams(window.location.search);
                 const userId = urlParams.get('u'); 
@@ -153,47 +155,39 @@
                 if (userId) {
                     currentUserId = userId;
                     try {
-                        const docRef = window.doc(window.db, "pages", userId);
-                        const docSnap = await window.getDoc(docRef);
+                        const docRef = db.collection("pages").doc(userId);
+                        const docSnap = await docRef.get();
                         
-                        if (docSnap.exists()) {
+                        if (docSnap.exists) {
                             siteData = docSnap.data();
                             pagePassword = siteData.password || null;
 
-                            // ГЛАВНАЯ ПРОВЕРКА: Если ID браузера совпадает с ID создателя страницы
                             if (siteData.ownerId === user.uid) {
                                 isCreator = true;
-                                
-                                // Показываем кнопку или подсказку ТОЛЬКО создателю
                                 if (siteData.password) {
                                     document.getElementById('secretHint').style.display = 'block';
                                 } else {
                                     document.getElementById('editMyPageBtn').style.display = 'inline-flex';
                                 }
                             }
-                            // Если зашел друг (isCreator = false), он не видит ни кнопок, ни подсказок
                         } else {
                             alert("Страница не найдена!");
                             window.location.href = window.location.pathname; 
                         }
-                    } catch (e) { console.error(e); }
+                    } catch (e) { console.error("Ошибка загрузки:", e); }
                 } else {
-                    // Главная страница (твоя)
                     try {
                         const res = await fetch(`data.json?t=${Date.now()}`);
                         siteData = await res.json();
                         document.getElementById('createBtn').style.display = 'block';
-                        isCreator = true; // На главной ты всегда создатель
-                    } catch (e) { }
+                        isCreator = true;
+                    } catch (e) { console.error(e); }
                 }
                 renderUI();
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
             });
         }
-
-        if (window.firebaseReady) { initApp(); } 
-        else { window.addEventListener('firebaseLoaded', initApp); }
 
         // ===== 2. ОТРИСОВКА =====
         function renderUI() {
@@ -246,11 +240,10 @@
         }
         function toggleLanguage() { setLanguage(currentLang === 'ru' ? 'ua' : 'ru'); }
 
-        // ===== 3. СЕКРЕТНЫЙ ВХОД (5 кликов) =====
+        // ===== 3. СЕКРЕТНЫЙ ВХОД =====
         let tapCount = 0; let tapTimer;
         function handleSecretTap() {
-            if (!isCreator) return; // Если это не создатель, клики не работают!
-            
+            if (!isCreator) return;
             tapCount++; clearTimeout(tapTimer);
             if (tapCount >= 5) {
                 document.getElementById('adminGear').classList.add('visible'); 
@@ -282,7 +275,6 @@
 
                 <div class="admin-link-item" style="border-color: #4ade80;">
                     <div class="input-group"><label style="color: #4ade80;">Пароль (необязательно)</label><input type="password" id="g-pass" placeholder="Оставь пустым для открытого доступа"></div>
-                    <p style="font-size:11px; color:#888; margin-top:5px;">Если поставишь пароль, кнопка "Редактировать" будет скрыта. Чтобы она появилась, нужно будет нажать 5 раз на свое имя.</p>
                 </div>
 
                 <div class="admin-actions" style="margin-top: 20px;">
@@ -298,7 +290,7 @@
             btn.innerText = "Сохранение..."; btn.disabled = true;
 
             const newId = Math.random().toString(36).substring(2, 8);
-            const user = window.auth.currentUser;
+            const user = auth.currentUser;
 
             const newData = {
                 ownerId: user ? user.uid : "unknown",
@@ -313,7 +305,7 @@
             };
 
             try {
-                await window.setDoc(window.doc(window.db, "pages", newId), newData);
+                await db.collection("pages").doc(newId).set(newData);
                 const baseUrl = window.location.origin + window.location.pathname;
                 const finalUrl = `${baseUrl}?u=${newId}`;
                 
@@ -408,7 +400,7 @@
             const newPass = document.getElementById('e-pass').value.trim();
 
             try {
-                await window.updateDoc(window.doc(window.db, "pages", currentUserId), { 
+                await db.collection("pages").doc(currentUserId).update({ 
                     profile: siteData.profile, 
                     links: siteData.links,
                     password: newPass || null
@@ -418,7 +410,7 @@
             } catch (e) { statusEl.innerText = "Ошибка."; statusEl.style.color = "#ff4d4d"; }
         }
 
-        // ===== 6. ТВОЯ ЛИЧНАЯ АДМИНКА (Секретная) =====
+        // ===== 6. ТВОЯ ЛИЧНАЯ АДМИНКА =====
         function openAdminModal() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
@@ -475,11 +467,10 @@
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(siteData, null, 2))));
                 const putRes = await fetch(apiUrl, { method: "PUT", headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update data", content: contentEncoded, sha: sha }) });
-                if (putRes.ok) { statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80"; setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); loadData(); }, 1500); } 
+                if (putRes.ok) { statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80"; setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); window.location.reload(); }, 1500); } 
                 else { statusEl.innerText = "Ошибка токена"; statusEl.style.color = "#ff4d4d"; }
             } catch (e) { statusEl.innerText = "Ошибка сети"; statusEl.style.color = "#ff4d4d"; }
         }
-        function loadData() { initApp(); }
     </script>
 </body>
 </html>
