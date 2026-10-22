@@ -104,7 +104,7 @@
     <div class="settings-btn" id="adminGear" onclick="openAdminModal()">⚙️</div>
     <div class="modal" id="adminModal"><div class="modal-content" id="modalContent"></div></div>
 
-    <!-- 1. Классические скрипты Firebase (без модулей) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -123,7 +123,7 @@
             document.getElementById('browser-warning').style.display = 'block';
         }
 
-        // ===== 1. ИНИЦИАЛИЗАЦИЯ FIREBASE =====
+        // ===== 1. ИНИЦИАЛИЗАЦИЯ =====
         const firebaseConfig = {
             apiKey: "AIzaSyCMj2Ao9IGDU2tfLru9vKHiHiiZCVBp66w",
             authDomain: "offxll-bio.firebaseapp.com",
@@ -138,10 +138,7 @@
             db = firebase.firestore();
             auth = firebase.auth();
             initApp();
-        } catch (e) {
-            console.error("Firebase init error:", e);
-            document.getElementById('loader').innerText = "Ошибка подключения к БД";
-        }
+        } catch (e) { document.getElementById('loader').innerText = "Ошибка подключения"; }
 
         async function initApp() {
             auth.onAuthStateChanged(async (user) => {
@@ -160,7 +157,7 @@
                         
                         if (docSnap.exists) {
                             siteData = docSnap.data();
-                            pagePassword = siteData.password || null;
+                            pagePassword = siteData.password || null; // ВОТ ТУТ МЫ БЕРЕМ ПАРОЛЬ ИЗ БАЗЫ
 
                             if (siteData.ownerId === user.uid) {
                                 isCreator = true;
@@ -174,14 +171,14 @@
                             alert("Страница не найдена!");
                             window.location.href = window.location.pathname; 
                         }
-                    } catch (e) { console.error("Ошибка загрузки:", e); }
+                    } catch (e) { console.error(e); }
                 } else {
                     try {
                         const res = await fetch(`data.json?t=${Date.now()}`);
                         siteData = await res.json();
                         document.getElementById('createBtn').style.display = 'block';
                         isCreator = true;
-                    } catch (e) { console.error(e); }
+                    } catch (e) { }
                 }
                 renderUI();
                 document.getElementById('loader').style.opacity = '0';
@@ -320,7 +317,7 @@
             } catch (e) { alert("Ошибка!"); btn.innerText = "Создать"; btn.disabled = false; }
         }
 
-        // ===== 5. РЕДАКТИРОВАНИЕ СВОЕЙ СТРАНИЦЫ =====
+        // ===== 5. РЕДАКТИРОВАНИЕ =====
         function requestEditPassword() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
@@ -407,10 +404,12 @@
                 });
                 statusEl.innerText = "УСПЕШНО!"; statusEl.style.color = "#4ade80";
                 setTimeout(() => { document.getElementById('adminModal').classList.remove('active'); window.location.reload(); }, 1500);
-            } catch (e) { statusEl.innerText = "Ошибка."; statusEl.style.color = "#ff4d4d"; }
+            } catch (e) { 
+                statusEl.innerText = "Ошибка."; statusEl.style.color = "#ff4d4d"; 
+            }
         }
 
-        // ===== 6. ТВОЯ ЛИЧНАЯ АДМИНКА =====
+        // ===== 6. ЛИЧНАЯ АДМИНКА =====
         function openAdminModal() {
             const modal = document.getElementById('adminModal');
             const content = document.getElementById('modalContent');
