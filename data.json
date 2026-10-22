@@ -9,22 +9,22 @@
   "links": [
     {
       "icon": "👽",
-      "title_ru": "МОЙ ТГК",
-      "title_ua": "МІЙ ТГК",
+      "title_ru": "мой тгк",
+      "title_ua": "мій тгк",
       "url": "tg://resolve?domain=molodoyfoto",
       "display_url": "t.me/molodoyfoto"
     },
     {
       "icon": "🎧",
-      "title_ru": "МУЗОНЧИК",
-      "title_ua": "МУЗОНЧИК",
+      "title_ru": "музончик",
+      "title_ua": "музончик ",
       "url": "tg://resolve?domain=molodoyyymusic",
       "display_url": "t.me/molodoyyymusic"
     },
     {
       "icon": "🥷",
-      "title_ru": "БИО",
-      "title_ua": "БІО",
+      "title_ru": "био",
+      "title_ua": "біо",
       "url": "tg://resolve?domain=moloffff",
       "display_url": "t.me/moloffff"
     },
