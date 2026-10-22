@@ -1,0 +1,50 @@
+{
+  "title_ru": "ПРИВЕТСТВУЮ ТЕБЯ",
+  "title_ua": "ВІТАЮ ТЕБЕ",
+  "subtitle_ru": "Ниже можешь найти мои соц. сети",
+  "subtitle_ua": "Нижче можеш знайти мої соц. мережі",
+  "links": [
+    {
+      "icon": "👽",
+      "title_ru": "МОЙ ТГК",
+      "title_ua": "МІЙ ТГК",
+      "url": "https://t.me/molodoyfoto",
+      "display_url": "t.me/molodoyfoto"
+    },
+    {
+      "icon": "🎧",
+      "title_ru": "МУЗОНЧИК",
+      "title_ua": "МУЗОНЧИК",
+      "url": "https://t.me/molodoyyymusic",
+      "display_url": "t.me/molodoyyymusic"
+    },
+    {
+      "icon": "🥷",
+      "title_ru": "БИО",
+      "title_ua": "БІО",
+      "url": "https://t.me/moloffff",
+      "display_url": "t.me/moloffff"
+    },
+    {
+      "icon": "📸",
+      "title_ru": "ИНСТ",
+      "title_ua": "ІНСТ",
+      "url": "https://www.instagram.com/sashxqqq",
+      "display_url": "instagram.com/sashxqqq"
+    },
+    {
+      "icon": "😏",
+      "title_ru": "МОЙ ТТ",
+      "title_ua": "МІЙ ТТ",
+      "url": "https://www.tiktok.com/@offmolodoyy",
+      "display_url": "tiktok.com/@offmolodoyy"
+    },
+    {
+      "icon": "✉️",
+      "title_ru": "ЛС - ТОЛЬКО ПО ВОПРОСАМ",
+      "title_ua": "ОС - ТІЛЬКИ З ПИТАНЬ",
+      "url": "https://t.me/uryyyyy",
+      "display_url": "t.me/uryyyyy"
+    }
+  ]
+}
